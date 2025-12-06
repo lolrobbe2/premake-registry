@@ -1,0 +1,52 @@
+﻿@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@inject IJSRuntime JS
+
+<nav class="navbar-premake">
+    <div class="navbar-container">
+        <a href="/" class="navbar-brand">PremakeApp</a>
+
+        <!-- Hamburger toggle -->
+        <button class="menu-toggle" @onclick="ToggleMenu" aria-label="Toggle navigation">
+            &#9776;
+        </button>
+
+        <!-- Links container -->
+        <div class="@GetMenuClasses()">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/docs" class="nav-link">Docs</a>
+
+            <button @onclick="() => LoginWithGitHub()" class="btn-github">
+                Login with GitHub
+            </button>
+        </div>
+    </div>
+</nav>
+
+@code {
+    private bool isMenuOpen;
+
+    private void ToggleMenu()
+    {
+        isMenuOpen = !isMenuOpen;
+        StateHasChanged(); // force re-render
+    }
+
+    private string GetMenuClasses()
+    {
+        return isMenuOpen ? "navbar-links show" : "navbar-links";
+    }
+
+    private async Task LoginWithGitHub()
+    {
+        await JS.InvokeVoidAsync(
+            "open",
+            "https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID",
+            "_self"
+        );
+    }
+}

@@ -1,0 +1,85 @@
+﻿/* ===========================
+   Global Color Palette
+   =========================== */
+:root {
+    --color-bg-dark: #1e1e1e;
+    --color-bg-light: #2a2a2a;
+    --color-border: #3a3a3a;
+    --color-text-primary: #dcdcdc;
+    --color-text-secondary: #a0a0a0;
+    --color-accent: #70b9ff;
+    --color-github-dark: #24292e;
+    --color-github-hover: #444c56;
+}
+
+/* ===========================
+   Base Styles
+   =========================== */
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-primary);
+    font-family: Consolas, Menlo, Monaco, monospace;
+}
+
+a {
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+/* ===========================
+   Buttons
+   =========================== */
+button {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: var(--color-accent);
+    color: #000;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+}
+
+    .btn-primary:hover {
+        background-color: #5aa8e6;
+    }
+
+.btn-github {
+    background-color: var(--color-github-dark);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+}
+
+    .btn-github:hover {
+        background-color: var(--color-github-hover);
+    }
+
+/* ===========================
+   Layout Helpers
+   =========================== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.flex {
+    display: flex;
+    align-items: center;
+}
+
+.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}

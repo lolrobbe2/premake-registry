@@ -1,0 +1,18 @@
+﻿@using Microsoft.JSInterop
+@using premake_registry.src.frontend.Components.layout.NavMenu
+@inherits LayoutComponentBase
+@inject IJSRuntime JS
+<div class="body">
+    <NavMenu />
+
+    @Body
+</div>
+
+
+@code {
+
+    protected async override void OnInitialized()
+    {
+       
+    }
+}

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "premake-registry": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:59829;http://localhost:59830"
+    }
+  }
+}

@@ -1,0 +1,80 @@
+﻿.navbar-premake {
+    background-color: var(--color-bg-dark);
+    border-bottom: 2px solid var(--color-border);
+    font-family: Consolas, Menlo, Monaco, monospace;
+}
+
+.navbar-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+}
+
+.navbar-brand {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.menu-toggle {
+    background: none;
+    border: none;
+    color: var(--color-text-primary);
+    font-size: 24px;
+    cursor: pointer;
+    display: none;
+    line-height: 1;
+}
+
+.navbar-links {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.nav-link {
+    color: var(--color-text-primary);
+    text-decoration: none;
+}
+
+.nav-link:hover {
+    color: var(--color-accent);
+}
+
+.btn-github {
+    background-color: var(--color-github-dark);
+    color: #fff;
+    border: 0;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.btn-github:hover {
+    background-color: var(--color-github-hover);
+}
+
+/* Mobile */
+@media (max-width: 992px) {
+    .menu-toggle {
+        display: block;
+    }
+
+    .navbar-container {
+        flex-wrap: wrap;
+    }
+
+    .navbar-links {
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .navbar-links.show {
+        display: flex;
+    }
+}
