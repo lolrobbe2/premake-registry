@@ -1,0 +1,9 @@
+*.sln
+*.csproj
+obj/
+bin/
+/.vs/premake-registry/CopilotIndices/17.14.1204.46620
+/.vs/premake-registry/FileContentIndex
+/.vs/premake-registry/DesignTimeBuild
+/.vs/premake-registry/v17
+/.vs/ProjectEvaluation
