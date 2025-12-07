@@ -44,6 +44,7 @@
     <Compile Include="src\FireBase\ServiceAccountCredentials.cs" />
     <Compile Include="src\FireBase\ServiceCollectionExtension.cs" />
     <Compile Include="src\Main.cs" />
+    <Compile Include="src\controllers\AuthController.cs" />
     <Compile Include="src\controllers\HealthController.cs" />
     <Compile Include="src\repositories\Cache.cs" />
   </ItemGroup>
@@ -56,7 +57,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version=" 9.0.8"/>
     <PackageReference Include="ClosedXML" Version="0.105.0"/>
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0"/>
-    <PackageReference Include="OpenIddict.AspNetCore" Version="5.1.0"/>
-    <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="5.1.0"/>
+    <PackageReference Include="OpenIddict.AspNetCore" Version="7.2.0"/>
+    <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="7.2.0"/>
+    <PackageReference Include="OpenIddict.Client.WebIntegration" Version="7.2.0"/>
+    <PackageReference Include="OpenIddict.Client.SystemNetHttp" Version="7.2.0"/>
+    <PackageReference Include="OpenIddict.Validation.SystemNetHttp" Version="7.2.0"/>
   </ItemGroup>
 </Project>

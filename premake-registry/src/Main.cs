@@ -1,13 +1,17 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using OpenIddict.Client.AspNetCore;
 using premake;
 using premake_registry.src.frontend.Pages;
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Security.Claims;
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,13 +20,14 @@ builder.Services
     //.AddFirebase()
     .AddRazorPages()
     .AddRazorRuntimeCompilation().WithRazorPagesRoot("/src/frontend/Pages");
-builder.Services.AddScoped(sp =>
+/*
+builder.Services.AddHttpClient("BlazorClient", (sp, client) =>
 {
-    NavigationManager navigation = sp.GetRequiredService<NavigationManager>();
-    return new HttpClient { BaseAddress = new Uri(navigation.BaseUri) };
-})
-;
+    var navigation = sp.GetRequiredService<NavigationManager>();
+    client.BaseAddress = new Uri(navigation.BaseUri);
+});
 
+*/
 
 
 
@@ -33,11 +38,27 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddSwaggerGen(c =>
 {
 });
-builder.Services.AddAuthentication();
-builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(options =>
+{
+    // Default for local persistence
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 
+    // Default for challenges (login)
+    options.DefaultChallengeScheme = OpenIddictClientAspNetCoreDefaults.AuthenticationScheme;
+})
+.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
+builder.Services.AddDbContext<DbContext>(options =>
+{
+    options.UseInMemoryDatabase("db");
+    options.UseOpenIddict();
+});
 builder.Services.AddOpenIddict()
-
+    .AddCore(options =>
+    {
+        // Configure OpenIddict to use the Entity Framework Core stores and models.
+        options.UseEntityFrameworkCore()
+               .UseDbContext<DbContext>();
+    })
     // Register the OpenIddict client components.
     .AddClient(options =>
     {
@@ -59,9 +80,20 @@ builder.Services.AddOpenIddict()
                {
                    options.SetClientId(premake.Config.GetGithubClientId())
                           .SetClientSecret(premake.Config.GetGithubClientSecret())
-                          .SetRedirectUri("callback/login/github");
+                          .SetRedirectUri("Auth/callback");
                });
+        options.UseSystemNetHttp();
+
+        options.AddRegistration(new OpenIddict.Client.OpenIddictClientRegistration
+        {
+            Issuer = new Uri("https://github.com/"),
+            ClientId = premake.Config.GetGithubClientId(),
+            ClientSecret = premake.Config.GetGithubClientSecret(),
+            Scopes = { "read:user" },
+
+        });
     });
+
 
 var host = builder.Build();
 
