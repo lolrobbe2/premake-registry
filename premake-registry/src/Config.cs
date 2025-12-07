@@ -86,5 +86,14 @@ namespace premake
         {
             return GetEnvVariable("FIREBASE_CLIENT_X509_CERT_URL");
         }
+
+        public static string GetGithubClientId()
+        {
+            return GetEnvVariable("GITHUB_CLIENT_ID");
+        }
+        public static string GetGithubClientSecret()
+        {
+            return GetEnvVariable("GITHUB_CLIENT_SECRET");
+        }
     }
 }

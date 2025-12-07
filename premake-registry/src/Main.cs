@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using premake;
+using premake_registry.src.frontend.Pages;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -32,6 +33,36 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddSwaggerGen(c =>
 {
 });
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
+
+builder.Services.AddOpenIddict()
+
+    // Register the OpenIddict client components.
+    .AddClient(options =>
+    {
+        // Allow the OpenIddict client to negotiate the authorization code flow.
+        options.AllowAuthorizationCodeFlow();
+
+        // Register the signing and encryption credentials used to protect
+        // sensitive data like the state tokens produced by OpenIddict.
+        options.AddDevelopmentEncryptionCertificate()
+               .AddDevelopmentSigningCertificate();
+
+        // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
+        options.UseAspNetCore()
+               .EnableRedirectionEndpointPassthrough();
+
+        // Register the GitHub integration.
+        options.UseWebProviders()
+               .AddGitHub(options =>
+               {
+                   options.SetClientId(premake.Config.GetGithubClientId())
+                          .SetClientSecret(premake.Config.GetGithubClientSecret())
+                          .SetRedirectUri("callback/login/github");
+               });
+    });
+
 var host = builder.Build();
 
 if (host.Environment.IsDevelopment())
@@ -43,6 +74,8 @@ if (host.Environment.IsDevelopment())
         }
     );
 }
+host.UseAuthentication();
+host.UseAuthorization();
 host.MapControllers();
 host.MapRazorPages();
 host.UseRouting();
