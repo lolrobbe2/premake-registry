@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,16 +19,6 @@ using System.Security.Claims;
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenLocalhost(5000); // HTTP
-    options.ListenLocalhost(5001, listenOptions =>
-    {
-        listenOptions.UseHttps();
-    });
-});
-
 
 builder.Services
     .AddMemoryCache()
@@ -55,7 +44,10 @@ builder.Services.AddSwaggerGen(c =>
 {
 });
 
-
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedHost;
+});
 
 builder.Services.AddAuthentication(options =>
 {
@@ -130,6 +122,7 @@ if (host.Environment.IsDevelopment())
     );
 }
 
+host.UseForwardedHeaders();
 host.UseHttpsRedirection();
 host.UseAuthentication();
 host.UseAuthorization();
@@ -155,4 +148,10 @@ if (host.Environment.IsDevelopment())
         RequestPath = "/css"
     });
 }
+host.Use(async (context, next) =>
+{
+    context.Request.Headers.Add("X-Forwarded-Host", context.Request.Headers["X-Original-Host"]);
+    // Call the next delegate/middleware in the pipeline.
+    await next(context);
+});
 await host.RunAsync();
