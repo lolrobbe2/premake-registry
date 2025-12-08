@@ -14,6 +14,7 @@ using premake.User;
 using premake_registry.src.frontend.Pages;
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -24,8 +25,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 
     // Clear defaults so all proxies/networks are trusted
-    options.KnownNetworks.Clear();
-    options.KnownProxies.Clear();
+    options.KnownProxies.Add(IPAddress.Parse("127.0.10.1"));
 });
 builder.Services
     .AddMemoryCache()
@@ -51,10 +51,6 @@ builder.Services.AddSwaggerGen(c =>
 {
 });
 
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedHost;
-});
 
 builder.Services.AddAuthentication(options =>
 {
@@ -156,10 +152,9 @@ if (host.Environment.IsDevelopment())
         RequestPath = "/css"
     });
 }
-host.Use(async (context, next) =>
+host.Use((context, next) =>
 {
-    context.Request.Headers.Add("X-Forwarded-Host", context.Request.Headers["X-Original-Host"]);
-    // Call the next delegate/middleware in the pipeline.
-    await next(context);
+    context.Request.Scheme = "https";
+    return next(context);
 });
 await host.RunAsync();
