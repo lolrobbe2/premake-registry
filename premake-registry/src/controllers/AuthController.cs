@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -23,7 +24,7 @@ namespace premake.controllers
         [HttpGet("challenge")]
         public IResult Get() => Results.Challenge(properties: null, authenticationSchemes: [Providers.GitHub]);
 
-        [HttpGet("callback"),HttpPost("callback")]
+        [HttpGet("callback"), HttpPost("callback")]
         public async Task<IResult> Authenticate()
         {
             // Retrieve the authorization data validated by OpenIddict as part of the callback handling.
@@ -38,7 +39,11 @@ namespace premake.controllers
             // claims can be resolved from the external identity and copied to the final authentication cookie.
             identity.SetClaim(ClaimTypes.Email, result.Principal!.GetClaim(ClaimTypes.Email))
                     .SetClaim(ClaimTypes.Name, result.Principal!.GetClaim("login"))
-                    .SetClaim(ClaimTypes.NameIdentifier, result.Principal!.GetClaim(ClaimTypes.NameIdentifier));
+                    .SetClaim(ClaimTypes.NameIdentifier, result.Principal!.GetClaim("id"))
+                    .SetClaim("account", result.Principal!.GetClaim("url"))
+                    .SetClaim("repos", result.Principal!.GetClaim("repos_url"))
+                    .SetClaim("avatar", result.Principal!.GetClaim("avatar_url"));
+
 
             // Preserve the registration details to be able to resolve them later.
             identity.SetClaim(Claims.Private.RegistrationId, result.Principal!.GetClaim(Claims.Private.RegistrationId))
@@ -68,9 +73,20 @@ namespace premake.controllers
             }
 
             return Results.Text(string.Format("You are {0}.", result.Principal.FindFirst(ClaimTypes.Name)!.Value));
-        
+
 
         }
-}
 
+        [HttpGet("logout")]
+        public async Task<IResult> Logout()
+        {
+            // Clear the local cookie
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // Optionally redirect to home
+            return Results.Redirect("/");
+        }
+
+
+    }
 }

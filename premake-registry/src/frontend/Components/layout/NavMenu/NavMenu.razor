@@ -4,7 +4,9 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
+@using premake.User
 @inject IJSRuntime JS
+@inject CurrentUser user;
 
 <nav class="navbar-premake">
     <div class="navbar-container">
@@ -20,9 +22,20 @@
             <a href="/" class="nav-link">Home</a>
             <a href="/docs" class="nav-link">Docs</a>
 
-            <button @onclick="() => LoginWithGitHub()" class="btn-github">
-                Login with GitHub
-            </button>
+            @if (user.IsLoggedIn())
+            {
+                <!-- Avatar button when logged in -->
+                <button class="btn-avatar" @onclick="OnAvatarClick">
+                    <img src="@user.AvatarUri" alt="User Avatar" class="avatar-img" />
+                </button>
+            }
+            else
+            {
+                <!-- GitHub login button when not logged in -->
+                <button @onclick="() => LoginWithGitHub()" class="btn-github">
+                    Login with GitHub
+                </button>
+            }
         </div>
     </div>
 </nav>
@@ -45,8 +58,14 @@
     {
         await JS.InvokeVoidAsync(
             "open",
-            "https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID",
+            "Auth/challenge",
             "_self"
         );
+    }
+
+    private void OnAvatarClick()
+    {
+        // Handle avatar button click (e.g. open profile menu, logout, etc.)
+        Console.WriteLine("Avatar clicked!");
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using OpenIddict.Client.AspNetCore;
 using premake;
+using premake.User;
 using premake_registry.src.frontend.Pages;
 using System;
 using System.IO;
@@ -94,6 +95,8 @@ builder.Services.AddOpenIddict()
         });
     });
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<CurrentUser>();
 
 var host = builder.Build();
 
