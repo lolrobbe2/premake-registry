@@ -1,0 +1,47 @@
+﻿@using premake.repositories.user.objects
+@using Microsoft.AspNetCore.Components.Web
+@inject NavigationManager NavManager
+@inject premake.User.CurrentUser CurrentUser
+
+<div class="user-repo" @onclick="ToggleExpand">
+    <div class="repo-header">
+        <!-- Avatar acts as the button -->
+        <img src="@CurrentUser.AvatarUri"
+             alt="User Avatar"
+             class="avatar"
+             title="Visit @repo.name repository"
+             @onclick="OnLinkClick" />
+
+        <h4>@repo.name</h4>
+    </div>
+
+    @if (isExpanded)
+    {
+        <div class="repo-details">
+            @if (!string.IsNullOrEmpty(repo.description))
+            {
+                <p><strong class="repo-item">Description:</strong> @repo.description</p>
+            }
+
+            @if (repo.license is not null)
+            {
+                <p><strong class="repo-item">License:</strong> @repo.license.Name</p>
+            }
+
+            <p><strong class="repo-item">Open Issues:</strong> @repo.issues</p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public UserRepo repo { get; set; } = default!;
+    private bool isExpanded;
+
+    private void ToggleExpand() => isExpanded = !isExpanded;
+
+    private void OnLinkClick(MouseEventArgs e)
+    {
+        // Navigate to the repository in a new tab
+        NavManager.NavigateTo(repo.html_url ?? repo.url, forceLoad: true);
+    }
+}

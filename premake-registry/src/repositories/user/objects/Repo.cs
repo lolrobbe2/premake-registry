@@ -1,14 +1,21 @@
 ﻿using Newtonsoft.Json;
-
+#nullable enable
 namespace premake.repositories.user.objects
 {
     public class UserRepo
     {
         [JsonProperty("name")]
-        public string name {  get; set; }
+        public required string name {  get; set; }
         [JsonProperty("url")]
-        public string url { get; set; }
+        public required string url { get; set; }
         [JsonProperty("open_issues")]
         public int issues { get; set; }
+        [JsonProperty("description")]
+        public string? description { get; set; }
+        [JsonProperty("license")]
+        public License? license { get; set; }
+
+        [JsonProperty("html_url")]
+        public required string html_url { get; set; }
     }
 }

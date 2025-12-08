@@ -1,0 +1,39 @@
+﻿@page "/user"
+@using premake.User
+@using premake.repositories.user
+@using premake.repositories.user.objects
+@using premake_registry.src.frontend.Components.User.UserRepo
+@using premake_registry.src.frontend.Components.common.LoadingContainer
+@using premake_registry.src.frontend.Components.User.RepoList
+@inject CurrentUser user
+@inject NavigationManager NavManager
+@inject GitRepoRepository RepoRepo
+
+<LoadingContainer Tasks="loadTasks">
+    <RepoList Repos="repos" />
+</LoadingContainer>
+
+@code {
+#nullable enable
+    private UserRepo[]? repos;
+    private Task[] loadTasks = Array.Empty<Task>();
+
+    protected override void OnParametersSet()
+    {
+        if (!user.IsLoggedIn())
+        {
+            NavManager.NavigateTo("/", forceLoad: true);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        var fetchTask = LoadReposAsync();
+        loadTasks = new[] { fetchTask };
+    }
+
+    private async Task LoadReposAsync()
+    {
+        repos = await RepoRepo.GetUserReposAsync();
+    }
+}

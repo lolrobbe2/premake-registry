@@ -44,14 +44,14 @@
     <Compile Include="src\FireBase\ServiceAccountCredentials.cs" />
     <Compile Include="src\FireBase\ServiceCollectionExtension.cs" />
     <Compile Include="src\Main.cs" />
+    <Compile Include="src\User\BrowserCache.cs" />
+    <Compile Include="src\User\CurrentUser.cs" />
     <Compile Include="src\controllers\AuthController.cs" />
     <Compile Include="src\controllers\HealthController.cs" />
     <Compile Include="src\repositories\Cache.cs" />
+    <Compile Include="src\repositories\user\RepoRepository.cs" />
     <Compile Include="src\repositories\user\objects\License.cs" />
     <Compile Include="src\repositories\user\objects\Repo.cs" />
-    <Compile Include="src\repositories\user\RepoRepository.cs" />
-    <Compile Include="src\User\BrowserCache.cs" />
-    <Compile Include="src\User\CurrentUser.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="3.5.0" />
@@ -67,8 +67,5 @@
     <PackageReference Include="OpenIddict.Client.WebIntegration" Version="7.2.0" />
     <PackageReference Include="OpenIddict.Client.SystemNetHttp" Version="7.2.0" />
     <PackageReference Include="OpenIddict.Validation.SystemNetHttp" Version="7.2.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="src\frontend\Pages\user\" />
   </ItemGroup>
 </Project>

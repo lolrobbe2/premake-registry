@@ -1,0 +1,20 @@
+﻿@using premake.repositories.user.objects
+@using premake_registry.src.frontend.Components.User.UserRepo
+
+<ul class="repo-list">
+    @if (Repos is not null && Repos.Length > 0)
+    {
+        @foreach (var repo in Repos)
+        {
+            <Repo repo="repo" />
+        }
+    }
+    else
+    {
+        <p>No repositories found.</p>
+    }
+</ul>
+
+@code {
+    [Parameter] public UserRepo[]? Repos { get; set; }
+}

@@ -7,8 +7,8 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using OpenIddict.Client.AspNetCore;
 using premake;
+using premake.repositories.user;
 using premake.User;
-using premake_registry.src.frontend.Pages;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -97,6 +97,7 @@ builder.Services.AddOpenIddict()
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CurrentUser>();
+builder.Services.AddScoped<GitRepoRepository>();
 
 var host = builder.Build();
 

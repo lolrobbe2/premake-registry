@@ -1,0 +1,79 @@
+﻿.user-repo {
+    display: block; /* block layout */
+    width: calc(100% - 40px); /* full width minus spacing */
+    box-sizing: border-box; /* include padding/border in width */
+    border: 1px solid #ddd;
+    border-radius: 1px;
+    padding: 1rem;
+    margin: 0 0 0.5rem 0; /* only bottom margin */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+    .user-repo:hover {
+        background-color: #f9f9f9;
+    }
+
+.repo-details {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #eee;
+    color: #555;
+}
+
+.user-repo h4 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #00ff2d;
+}
+.user-repo .repo-item {
+    color: #e4ff31;
+}
+.user-repo:hover .repo-item {
+    color: #555;
+}
+.user-repo p {
+    margin: 0.25rem 0;
+    color: #555;
+}
+
+.user-repo a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+    .user-repo a:hover {
+        text-decoration: underline;
+    }
+
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer; /* makes it clear it's clickable */
+    transition: transform 0.2s ease;
+}
+
+    .avatar:hover {
+        transform: scale(1.05); /* subtle hover feedback */
+    }
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+    .user-repo {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+        .user-repo h4 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-repo p {
+            font-size: 0.9rem;
+        }
+}
