@@ -127,7 +127,6 @@ if (host.Environment.IsDevelopment())
 
 host.UseHsts();
 host.UseForwardedHeaders();
-host.UseHttpsRedirection();
 host.UseAuthentication();
 host.UseAuthorization();
 host.MapControllers();
