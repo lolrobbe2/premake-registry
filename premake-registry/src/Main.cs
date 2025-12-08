@@ -79,7 +79,7 @@ builder.Services.AddOpenIddict()
 
         // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
         options.UseAspNetCore()
-               .EnableRedirectionEndpointPassthrough().DisableTransportSecurityRequirement();
+               .EnableRedirectionEndpointPassthrough();
 
         // Register the GitHub integration.
         options.UseWebProviders()
@@ -118,7 +118,7 @@ if (host.Environment.IsDevelopment())
     );
 }
 
-
+host.UseHttpsRedirection();
 host.UseAuthentication();
 host.UseAuthorization();
 host.MapControllers();
