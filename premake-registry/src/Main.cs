@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using DocumentFormat.OpenXml.Office2010.ExcelAc;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -9,6 +11,7 @@ using OpenIddict.Client.AspNetCore;
 using premake;
 using premake.repositories.user;
 using premake.User;
+using premake_registry.src.frontend.Pages;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -38,6 +41,15 @@ builder.Services.AddOpenApi();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSwaggerGen(c =>
 {
+});
+
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
+
+    // Add Render’s internal proxy loopback
+    options.KnownProxies.Add(System.Net.IPAddress.Parse("127.0.0.1"));
 });
 builder.Services.AddAuthentication(options =>
 {
@@ -93,6 +105,7 @@ builder.Services.AddOpenIddict()
             Scopes = { "read:user" },
 
         });
+
     });
 
 builder.Services.AddHttpContextAccessor();
@@ -110,6 +123,7 @@ if (host.Environment.IsDevelopment())
         }
     );
 }
+
 host.UseAuthentication();
 host.UseAuthorization();
 host.MapControllers();
