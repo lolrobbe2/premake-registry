@@ -19,7 +19,14 @@ using System.Security.Claims;
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 
+    // Clear defaults so all proxies/networks are trusted
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 builder.Services
     .AddMemoryCache()
     //.AddFirebase()
