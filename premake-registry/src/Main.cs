@@ -44,13 +44,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
 
-    // Add Render’s internal proxy loopback
-    options.KnownProxies.Add(System.Net.IPAddress.Parse("127.0.0.1"));
-});
 builder.Services.AddAuthentication(options =>
 {
     // Default for local persistence
@@ -85,7 +79,7 @@ builder.Services.AddOpenIddict()
 
         // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
         options.UseAspNetCore()
-               .EnableRedirectionEndpointPassthrough();
+               .EnableRedirectionEndpointPassthrough().DisableTransportSecurityRequirement();
 
         // Register the GitHub integration.
         options.UseWebProviders()
@@ -123,6 +117,7 @@ if (host.Environment.IsDevelopment())
         }
     );
 }
+
 
 host.UseAuthentication();
 host.UseAuthorization();
