@@ -32,8 +32,15 @@ namespace premake.User
 
         private async Task<string?> GetToken()
         {
-            return await _httpContextAccessor.HttpContext?.GetTokenAsync("access_token");
+            HttpContext? httpContext = _httpContextAccessor.HttpContext;
+            if (httpContext == null)
+            {
+                return null;
+            }
+
+            return await httpContext.GetTokenAsync("access_token"); ;
         }
+
         /// <summary>
         /// Generic GET request to an API endpoint, deserializing JSON into TOutput.
         /// Automatically attaches bearer token if available.
@@ -41,13 +48,15 @@ namespace premake.User
         public async Task<TOutput?> GetFromApiAsync<TOutput>(string apiUrl)
         {
             // Attach token if present
-            var token = await GetToken();
-            if (!string.IsNullOrEmpty(token))
+            if (IsLoggedIn())
             {
-                _httpClient.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", token);
+                var token = await GetToken();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", token);
+                }
             }
-
             // GitHub requires a User-Agent header
             if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
             {
