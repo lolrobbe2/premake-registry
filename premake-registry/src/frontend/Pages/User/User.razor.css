@@ -1,0 +1,11 @@
+﻿.user-actions {
+    display: flex;
+    justify-content: center; /* center buttons horizontally */
+    gap: 1rem;
+    margin: 2rem auto; /* center the whole block */
+    max-width: 25rem; /* constrain width (400px → 25rem) */
+}
+
+    .user-actions .button-primary {
+        flex: 1; /* let buttons share space evenly */
+    }

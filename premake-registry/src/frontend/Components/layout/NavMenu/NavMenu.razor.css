@@ -97,7 +97,7 @@
 
 
 /* Mobile */
-@media (max-width: 992px) {
+@media (max-width: 600px) {
     .menu-toggle {
         display: block;
     }
@@ -114,7 +114,7 @@
         margin-top: 10px;
     }
 
-    .navbar-links.show {
-        display: flex;
-    }
+        .navbar-links.show {
+            display: flex;
+        }
 }

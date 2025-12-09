@@ -1,8 +1,103 @@
 ﻿@page "/"
 
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
 
-<h3>Index</h3>
+@using premake.repositories.registry
+@using premake.repositories.registry.objects
+@using premake.repositories.user
+@using premake.repositories.user.objects
+@using premake_registry.src.frontend.Components.User.UserRepo.RepoList
+@using premake_registry.src.frontend.Components.common.LoadingContainer
+
+<h3>Repositories</h3>
+
+<div class="search-bar">
+    <select @bind="selectedFilter">
+        <option value="UserName">User Name</option>
+        <option value="RepoName">Repository Name</option>
+        <option value="Tag">Tag</option>
+        <option value="Recent">Most Recent</option>
+    </select>
+
+    <input type="text" @bind="searchTerm" placeholder="Enter search value..." />
+    <button class="btn btn-primary" @onclick="OnSearch">Search</button>
+</div>
+
+<div class="filters">
+    @if (!showLibs)
+    {
+        <button class="btn btn-primary" @onclick="() => ShowLibs(true)">Show Libraries</button>
+    }
+    else
+    {
+        <button class="btn btn-primary" @onclick="() => ShowLibs(false)">Show Modules</button>
+    }
+</div>
+
+<LoadingContainer Tasks="loadTasks">
+    <RepoList Repos="repos.ToArray()" OnAdd="OnAddSelected" IsInfo="true" />
+</LoadingContainer>
+
 
 @code {
+    #nullable enable
+    private Task[] loadTasks = Array.Empty<Task>();
+    private List<UserRepo>? repos;
+    private bool showLibs = true;
+    private string searchTerm = string.Empty;
+    private string selectedFilter = "Recent";
 
+    [Inject] private UserRepositories UserRepos { get; set; } = default!;
+    [Inject] private GitRepoRepository GitRepos { get; set; } = default!;
+    protected override void OnInitialized()
+    {
+        var load = LoadReposAsync();
+        loadTasks = new[] { load };
+    }
+
+    private async Task LoadReposAsync()
+    {
+        var all = await UserRepos.GetMostRecentAsync(10);
+        repos = (await GitRepos.GetUserReposAsync(all.Where(r => r.isLib == showLibs).ToArray())).ToList();
+    }
+
+    private async Task ShowLibs(bool libs)
+    {
+        showLibs = libs;
+        var load = LoadReposAsync();
+        loadTasks = new[] { load };
+    }
+
+    private async Task OnSearch()
+    {
+        Task<IReadOnlyList<RegistryRepo>> queryTask;
+
+        switch (selectedFilter)
+        {
+            case "UserName":
+                queryTask = UserRepos.FindByUserNameAsync(searchTerm);
+                break;
+            case "RepoName":
+                queryTask = UserRepos.FindByRepoNameAsync(searchTerm);
+                break;
+            case "Tag":
+                queryTask = UserRepos.FindByTagAsync(searchTerm);
+                break;
+            case "Recent":
+            default:
+                queryTask = UserRepos.GetMostRecentAsync(10);
+                break;
+        }
+
+        var results = await queryTask;
+        repos = (await GitRepos.GetUserReposAsync(results.Where(r => r.isLib == showLibs).ToArray())).ToList();
+    }
+
+    private void OnAddSelected(UserRepo repo)
+    {
+        // handle add action here
+    }
 }

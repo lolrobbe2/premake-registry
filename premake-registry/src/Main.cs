@@ -9,6 +9,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using OpenIddict.Client.AspNetCore;
 using premake;
+using premake.repositories.registry;
 using premake.repositories.user;
 using premake.User;
 using premake_registry.src.frontend.Pages;
@@ -29,17 +30,10 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 builder.Services
     .AddMemoryCache()
-    //.AddFirebase()
+    .AddFirebase()
     .AddRazorPages()
     .AddRazorRuntimeCompilation().WithRazorPagesRoot("/src/frontend/Pages");
-/*
-builder.Services.AddHttpClient("BlazorClient", (sp, client) =>
-{
-    var navigation = sp.GetRequiredService<NavigationManager>();
-    client.BaseAddress = new Uri(navigation.BaseUri);
-});
 
-*/
 
 
 
@@ -112,14 +106,14 @@ builder.Services.AddOpenIddict()
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CurrentUser>();
 builder.Services.AddScoped<GitRepoRepository>();
-
+builder.Services.AddScoped<UserRepositories>();
 var host = builder.Build();
 
 if (host.Environment.IsDevelopment())
 {
     host.MapOpenApi();
     host.UseSwaggerUI(options => {
-        options.SwaggerEndpoint("/openapi/v1.json", "VOID api");
+        options.SwaggerEndpoint("/openapi/v1.json", "premake-registry api");
         
         }
     );

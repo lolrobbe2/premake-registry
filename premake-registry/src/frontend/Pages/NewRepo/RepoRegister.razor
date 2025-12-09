@@ -1,0 +1,98 @@
+﻿@page "/user/new_repo/{RepoName}"
+@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using premake.User
+@using premake.repositories.registry.objects
+@using premake.repositories.user
+    
+
+<h3>Register Repository</h3>
+
+<p>Repository: <strong>@RepoName</strong></p>
+
+<EditForm Model="@repoModel" OnValidSubmit="RegisterRepoAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="tags-container">
+        <label>Tags</label>
+        @foreach (var tag in tags)
+        {
+            <div class="tag-item">
+                <span class="tag-number">@($"{tags.IndexOf(tag) + 1}.")</span>
+                <InputText @bind-Value="tag.Value" class="tag-input" />
+                <button type="button" class="remove-btn btn-primary" @onclick="() => RemoveTag(tag)">❌</button>
+            </div>
+        }
+
+        <button type="button" class="add-btn btn-primary" @onclick="AddTag">+ Add Tag</button>
+    </div>
+
+
+    <div class="form-group">
+        <label>Type</label>
+        <div class="toggle-group">
+            @if (!repoModel.isLib)
+            {
+                <button type="button"
+                        class="btn-primary type-button"
+                @onclick="() => repoModel.isLib = true">
+                    Library
+                </button>
+            }
+            else
+            {
+                <button type="button"
+                        class="btn-primary type-button"
+                @onclick="() => repoModel.isLib = false">
+                    Module
+                </button>
+            }
+        </div>
+    </div>
+
+
+    <button type="submit" class="btn btn-primary" @onclick="RegisterRepoAsync">Register</button>
+</EditForm>
+
+@code {
+    [Parameter] public string RepoName { get; set; } = string.Empty;
+
+    private RegistryRepo repoModel = new RegistryRepo();
+    private List<TagWrapper> tags = new();
+
+    [Inject] private GitRepoRepository GitRepos { get; set; } = default!;
+    [Inject] private CurrentUser user { get; set; }
+    protected override void OnInitialized()
+    {
+        repoModel.UserName = user.UserName;
+        repoModel.RepoName = RepoName;
+        tags.Add(new TagWrapper()); // start with one tag field
+    }
+
+    private void AddTag() => tags.Add(new TagWrapper());
+
+    private void RemoveTag(TagWrapper tag) => tags.Remove(tag);
+
+    private async Task RegisterRepoAsync()
+    {
+        
+
+        repoModel.tags = tags
+            .Select(t => t.Value)
+            .Where(v => !string.IsNullOrWhiteSpace(v))
+            .ToArray();
+
+        await GitRepos.RegisterAsync(repoModel);
+        // show confirmation or redirect
+    }
+
+    private class TagWrapper
+    {
+        public string Value { get; set; } = string.Empty;
+    }
+}

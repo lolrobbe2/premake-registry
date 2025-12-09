@@ -22,7 +22,22 @@ architecture "x86_64"
       language "C#"
       targetdir "bin/%{cfg.buildcfg}"
       files { "%{prj.name}/src/**.cs", "%{prj.name}/src/**.env" }       -- Include all C# source files
-      nuget { "Blazor.Bootstrap:3.5.0","DotNetEnv:3.1.1","Google.Cloud.Firestore:3.10.0", "Microsoft.AspNetCore.OpenApi:9.0.8", "Swashbuckle.AspNetCore:9.0.4", "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation: 9.0.8", "ClosedXML:0.105.0", "Microsoft.EntityFrameworkCore.InMemory:9.0.0", "OpenIddict.AspNetCore:7.2.0","OpenIddict.EntityFrameworkCore:7.2.0","OpenIddict.Client.WebIntegration:7.2.0","OpenIddict.Client.SystemNetHttp:7.2.0","OpenIddict.Validation.SystemNetHttp:7.2.0" }
+      nuget { 
+         "Blazor.Bootstrap:3.5.0",
+         "DotNetEnv:3.1.1",
+         "Google.Cloud.Firestore:3.10.0", 
+         "Microsoft.AspNetCore.OpenApi:9.0.8", 
+         "Swashbuckle.AspNetCore:9.0.4", 
+         "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation: 9.0.8", 
+         "ClosedXML:0.105.0", 
+         "Microsoft.EntityFrameworkCore.InMemory:9.0.0", 
+         "OpenIddict.AspNetCore:7.2.0", 
+         "OpenIddict.EntityFrameworkCore:7.2.0",
+         "OpenIddict.Client.WebIntegration:7.2.0",
+         "OpenIddict.Client.SystemNetHttp:7.2.0",
+         "OpenIddict.Validation.SystemNetHttp:7.2.0",
+         "Markdig:0.44.0"
+      }
       vsprops {
          PublishSingleFile = "true",
          SelfContained = "true",

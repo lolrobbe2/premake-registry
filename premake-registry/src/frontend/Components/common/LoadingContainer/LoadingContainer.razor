@@ -1,4 +1,11 @@
-﻿<div class="loading-container">
+﻿@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="loading-container">
     @if (!_isFinished)
     {
         <div class="spinner"></div>

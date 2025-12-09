@@ -55,7 +55,10 @@ namespace premake.User
             }
 
             var response = await _httpClient.GetAsync(apiUrl);
-            response.EnsureSuccessStatusCode();
+            if (response.IsSuccessStatusCode == false)
+            {
+                return default;
+            }
 
             var stream = await response.Content.ReadAsStreamAsync();
             var result = await JsonSerializer.DeserializeAsync<TOutput>(stream,

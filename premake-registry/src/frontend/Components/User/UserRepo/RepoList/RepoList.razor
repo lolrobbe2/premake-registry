@@ -4,17 +4,21 @@
 <ul class="repo-list">
     @if (Repos is not null && Repos.Length > 0)
     {
-        @foreach (var repo in Repos)
+        @foreach (UserRepo repo in Repos)
         {
-            <Repo repo="repo" />
+            <Repo repo="repo" OnAdd="OnAdd" IsInfo="IsInfo" />
         }
     }
     else
     {
-        <p>No repositories found.</p>
+        <li>No repositories found.</li>
     }
 </ul>
 
 @code {
+    #nullable enable
     [Parameter] public UserRepo[]? Repos { get; set; }
+
+    [Parameter] public EventCallback<UserRepo> OnAdd { get; set; }
+    [Parameter] public bool IsInfo { get; set; } = false;
 }
