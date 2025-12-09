@@ -1,0 +1,77 @@
+﻿.info-container {
+    display: flex;
+    flex-direction: row-reverse;
+    width:100%;
+    height: 100%;
+}
+
+.repo-header {
+    width: 30%;
+    margin-inline: 2rem auto;
+    padding: 1rem;
+    border: 0.4rem solid #ccc;
+    border-radius: 16px
+}
+.readme {
+    padding: 1rem;
+    width: calc(70% - 2rem);
+    border: 0.2rem solid #ccc;
+    border-radius: 8px
+}
+/* Install block and links */
+.install-block,
+.repo-links,
+.repo-meta {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 1rem;
+    border-top: 0.1rem solid #ccc;
+    margin-top: 0.2rem;
+}
+
+/* Tags */
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) { /* 600px equivalent */
+
+    .repo-header {
+        margin: 0.5rem;
+        width: calc(80% - 1.3rem)
+    }
+
+    .install-block,
+    .repo-links,
+    .repo-meta {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+        .install-block code {
+            display: block;
+            margin-top: 0.5rem;
+            word-break: break-word;
+        }
+
+    .tags {
+        justify-content: flex-start;
+    }
+    .info-container {
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+        display: flex;
+    }
+
+    .readme {
+        margin: 0.5rem;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        width: calc(80% - 1.3rem)
+    }
+}

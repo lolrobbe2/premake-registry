@@ -12,6 +12,8 @@
 @using premake_registry.src.frontend.Components.User.UserRepo.RepoList
 @using premake_registry.src.frontend.Components.common.LoadingContainer
 
+@inject NavigationManager NavManager;
+
 <h3>Repositories</h3>
 
 <div class="search-bar">
@@ -98,6 +100,6 @@
 
     private void OnAddSelected(UserRepo repo)
     {
-        // handle add action here
+        NavManager.NavigateTo($"/info/{repo.full_name}");
     }
 }

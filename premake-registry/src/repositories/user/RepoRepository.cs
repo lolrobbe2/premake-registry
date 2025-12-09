@@ -44,7 +44,9 @@ namespace premake.repositories.user
 
         public async Task<UserRepo> GetUserRepoAsync(RegistryRepo repo)
         {
-            return await _user.GetFromApiAsync<UserRepo>(repo.ApiUrl); 
+            UserRepo userRepo = await _user.GetFromApiAsync<UserRepo>(repo.ApiUrl);
+            userRepo.owner = await GetOwner(repo.UserName);
+            return userRepo;
         }
         public async Task<UserRepo[]> GetUserReposAsync(RegistryRepo[] repos)
         {
@@ -77,7 +79,7 @@ namespace premake.repositories.user
         /// <summary>
         /// Get all registered repositories for the current user from Firestore.
         /// </summary>
-        public async Task<RegistryRepo[]> GetMyRegisteredReposAsync()
+        public async Task<RegistryRepo[]> GetRegisteredReposAsync()
         {
             if (!_user.IsLoggedIn())
                 return Array.Empty<RegistryRepo>();
@@ -92,6 +94,9 @@ namespace premake.repositories.user
 
             return repos;
         }
-
+        public async Task<Owner> GetOwner(string name)
+        {
+            return await _user.GetFromApiAsync<Owner>($"https://api.github.com/users/{name}");
+        } 
     }
 }

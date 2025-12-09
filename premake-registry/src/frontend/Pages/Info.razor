@@ -1,0 +1,98 @@
+﻿@page "/info/{owner}/{repoName}"
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+
+@using Markdig
+@using System.Net.Http
+@using premake.repositories.registry
+@using premake.repositories.registry.objects
+@using premake.repositories.user
+@using premake.repositories.user.objects
+@inject UserRepositories UserRepos
+@inject GitRepoRepository GitRepos
+@inject HttpClient Http
+
+<h2>@owner / @repoName</h2>
+
+@if (repo == null)
+{
+    <p><em>Loading repository...</em></p>
+}
+else
+{
+    <div class="info-container">
+        <div class="repo-header">
+            <p>@repo.RepoName</p>
+            <div class="install-block">
+                <label>Install</label>
+            </div>
+
+            <div class="repo-links">
+                <a href="https://github.com/@owner/@repoName" target="_blank"><svg width="16" height="16" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><title>Git</title><g fill="#bd2c00" fill-rule="nonzero"><path d="M15.6981994,7.28744895 L8.71251571,0.3018063 C8.3102891,-0.1006021 7.65784619,-0.1006021 7.25527133,0.3018063 L5.80464367,1.75263572 L7.64478689,3.59281398 C8.07243561,3.44828825 8.56276901,3.5452772 8.90352982,3.88604451 C9.24638012,4.22907547 9.34249661,4.72359725 9.19431703,5.15282127 L10.9679448,6.92630874 C11.3971607,6.77830046 11.8918472,6.8738964 12.2346975,7.21727561 C12.7135387,7.69595181 12.7135387,8.47203759 12.2346975,8.95106204 C11.755508,9.43026062 10.9796112,9.43026062 10.5002476,8.95106204 C10.140159,8.59061834 10.0510075,8.06127108 10.2336636,7.61759448 L8.57948492,5.9635584 L8.57948492,10.3160467 C8.69614805,10.3738569 8.80636859,10.4509954 8.90352982,10.5479843 C9.38237103,11.0268347 9.38237103,11.8027463 8.90352982,12.2822931 C8.42468862,12.7609693 7.64826937,12.7609693 7.16977641,12.2822931 C6.69093521,11.8027463 6.69093521,11.0268347 7.16977641,10.5479843 C7.28818078,10.4297518 7.42521643,10.3402504 7.57148065,10.2803505 L7.57148065,5.88746473 C7.42521643,5.82773904 7.28852903,5.73893407 7.16977641,5.62000506 C6.80707597,5.25747183 6.71983981,4.72499027 6.90597844,4.27957241 L5.09195384,2.465165 L0.301800552,7.25506126 C-0.100600184,7.65781791 -0.100600184,8.31027324 0.301800552,8.71268164 L7.28783254,15.6983243 C7.69005915,16.1005586 8.34232793,16.1005586 8.74507691,15.6983243 L15.6981994,8.74506934 C16.1006002,8.34266094 16.1006002,7.68968322 15.6981994,7.28744895" id="Path"></path></g></svg> Repository</a>
+                <a href="https://github.com/@owner/@repoName#readme" target="_blank">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#bd2c00" viewBox="0 0 16 16">
+                        <path d="M6.354 5.5H4a3 3 0 0 0 0 6h2.354a.5.5 0 0 1 0 1H4a4 4 0 0 1 0-8h2.354a.5.5 0 0 1 0 1zM9.646 5.5H12a3 3 0 0 1 0 6H9.646a.5.5 0 0 0 0 1H12a4 4 0 0 0 0-8H9.646a.5.5 0 0 0 0 1z" />
+                        <path d="M5.5 8a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5z" />
+                    </svg>
+                    Homepage
+                </a>
+            </div>
+
+            <div class="repo-meta">
+                <span><strong>License:</strong> @userRepo.license.Name</span>
+                <span><strong>Published:</strong> @repo.CreatedAt.ToDateTime().ToLocalTime().ToShortDateString()</span>
+            </div>
+
+            @if (repo.tags?.Length > 0)
+            {
+                <div class="tags">
+                    @foreach (var tag in repo.tags)
+                    {
+                        <span class="tag">@tag</span>
+                    }
+                </div>
+            }
+
+        </div>
+
+        <div class="readme" @onclick:stopPropagation="true">
+            @((MarkupString)readmeHtml)
+        </div>
+    </div>
+}
+
+
+@code {
+    #nullable enable
+    [Parameter] public string owner { get; set; } = string.Empty;
+    [Parameter] public string repoName { get; set; } = string.Empty;
+
+    private RegistryRepo? repo;
+    private UserRepo? userRepo;
+    private string readmeHtml = "<p><em>No README found.</em></p>";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // find repos by owner
+        var repos = await UserRepos.FindByUserNameAsync(owner);
+        repo = repos.FirstOrDefault(r => r.RepoName.Equals(repoName, StringComparison.OrdinalIgnoreCase));
+
+        if (repo == null)
+            return;
+
+        var readmeUrl = repo.RepoReadme;
+        try
+        {
+            var md = await Http.GetStringAsync(readmeUrl);
+            readmeHtml = Markdown.ToHtml(md);
+        }
+        catch
+        {
+            readmeHtml = "<p><em>Could not load README.md</em></p>";
+        }
+        userRepo = await GitRepos.GetUserRepoAsync(repo); 
+    }
+}

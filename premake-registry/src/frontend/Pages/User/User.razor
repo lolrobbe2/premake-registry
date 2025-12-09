@@ -8,9 +8,11 @@
 @using Microsoft.AspNetCore.Components.Web
 
 @using premake.User
+@using premake.repositories.registry
 @using premake.repositories.user
 @using premake.repositories.user.objects
 @using premake_registry.src.frontend.Components.User.UserRepo
+@using premake_registry.src.frontend.Components.User.UserRepo.RepoList
 @using premake_registry.src.frontend.Components.common.LoadingContainer
 @inject CurrentUser user
 @inject NavigationManager NavManager
@@ -20,20 +22,32 @@
     <button @onclick="OnRegisterRepo" class="btn-primary">Register Repository</button>
     <button @onclick="OnLogout" class="btn-primary">Logout</button>
 </div>
-
+<LoadingContainer Tasks="loadTasks">
+    <RepoList Repos="repos.ToArray()" OnAdd="OnOpenSelected" IsInfo="true" />
+</LoadingContainer>
 
 @code {
-#nullable enable
-    private UserRepo[]? repos;
+    #nullable enable
+    private Task[] loadTasks = Array.Empty<Task>();
+    private List<UserRepo>? repos;
+    [Inject] private UserRepositories UserRepos { get; set; } = default!;
+    [Inject] private GitRepoRepository GitRepos { get; set; } = default!;
     protected override void OnParametersSet()
     {
         if (!user.IsLoggedIn())
         {
             NavManager.NavigateTo("/", true);
+        } else {
+            var load = LoadReposAsync();
+            loadTasks = new[] { load };
         }
-        repos = await RepoRepo.GetUserReposAsync();
-    }
 
+    }
+    private async Task LoadReposAsync()
+    {
+        var all = await GitRepos.GetRegisteredReposAsync();
+        repos = (await GitRepos.GetUserReposAsync(all.ToArray())).ToList();
+    }
     private void OnLogout()
     {
         
@@ -43,5 +57,9 @@
     private void OnRegisterRepo()
     {
         NavManager.NavigateTo("/user/new_repo");
+    }
+    private void OnOpenSelected(UserRepo repo)
+    {
+        // handle add action here
     }
 }
