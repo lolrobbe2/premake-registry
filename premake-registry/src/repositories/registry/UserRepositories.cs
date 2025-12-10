@@ -11,7 +11,6 @@ namespace premake.repositories.registry
 {
     public class UserRepositories
     {
-        
         private readonly Cache<RegistryRepo[]> _cache;
         private readonly CollectionReference _reposCollection;
 
@@ -24,41 +23,70 @@ namespace premake.repositories.registry
         // --- Search by username ---
         public async Task<IReadOnlyList<RegistryRepo>> FindByUserNameAsync(string userName)
         {
+            string cacheKey = $"user_{userName}";
+            if (_cache.CacheGet(cacheKey, out RegistryRepo[] cached))
+            {
+                return cached;
+            }
+
             var snapshot = await _reposCollection
                 .WhereEqualTo(nameof(RegistryRepo.UserName), userName)
                 .GetSnapshotAsync();
 
-            return snapshot.Documents.Select(d => d.ConvertTo<RegistryRepo>()).ToList();
+            var repos = snapshot.Documents.Select(d => d.ConvertTo<RegistryRepo>()).ToArray();
+            return _cache.CacheSet(repos, cacheKey);
         }
 
         // --- Search by repository name ---
         public async Task<IReadOnlyList<RegistryRepo>> FindByRepoNameAsync(string repoName)
         {
+            string cacheKey = $"repo_{repoName}";
+            if (_cache.CacheGet(cacheKey, out RegistryRepo[] cached))
+            {
+                return cached;
+            }
+
             var snapshot = await _reposCollection
                 .WhereEqualTo(nameof(RegistryRepo.RepoName), repoName)
                 .GetSnapshotAsync();
 
-            return snapshot.Documents.Select(d => d.ConvertTo<RegistryRepo>()).ToList();
+            var repos = snapshot.Documents.Select(d => d.ConvertTo<RegistryRepo>()).ToArray();
+            return _cache.CacheSet(repos, cacheKey);
         }
 
         // --- Search by tag ---
         public async Task<IReadOnlyList<RegistryRepo>> FindByTagAsync(string tag)
         {
+            string cacheKey = $"tag_{tag}";
+            if (_cache.CacheGet(cacheKey, out RegistryRepo[] cached))
+            {
+                return cached;
+            }
+
             var snapshot = await _reposCollection
                 .WhereArrayContains(nameof(RegistryRepo.tags), tag)
                 .GetSnapshotAsync();
 
-            return snapshot.Documents.Select(d => d.ConvertTo<RegistryRepo>()).ToList();
+            var repos = snapshot.Documents.Select(d => d.ConvertTo<RegistryRepo>()).ToArray();
+            return _cache.CacheSet(repos, cacheKey);
         }
 
+        // --- Most recent repos ---
         public async Task<IReadOnlyList<RegistryRepo>> GetMostRecentAsync(int count = 10)
         {
+            string cacheKey = $"recent_{count}";
+            if (_cache.CacheGet(cacheKey, out RegistryRepo[] cached))
+            {
+                return cached;
+            }
+
             var snapshot = await _reposCollection
                 .OrderByDescending(nameof(RegistryRepo.CreatedAt))
                 .Limit(count)
                 .GetSnapshotAsync();
 
-            return snapshot.Documents.Select(d => d.ConvertTo<RegistryRepo>()).ToList();
+            var repos = snapshot.Documents.Select(d => d.ConvertTo<RegistryRepo>()).ToArray();
+            return _cache.CacheSet(repos, cacheKey);
         }
     }
 }

@@ -2,7 +2,9 @@
 using Google.Cloud.Firestore.V1;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.JSInterop;
+using premake.Repo;
 using premake.repositories.registry.objects;
 using premake.repositories.user.objects;
 using premake.User;
@@ -18,41 +20,65 @@ namespace premake.repositories.user
     
     public class GitRepoRepository
     {
-
+        private readonly Cache<UserRepo[]> _userRepoCache;
+        private readonly Cache<UserRepo> _repoCache;
+        private readonly Cache<Owner> _ownerCache;
         private readonly IJSRuntime _js;
         private readonly CurrentUser _user;
         private readonly HttpClient _client;
         private readonly CollectionReference _reposCollection;
-        public GitRepoRepository(IJSRuntime js, CurrentUser user,HttpClient client, FirestoreDb firestore)
+        public GitRepoRepository(IMemoryCache cache,IJSRuntime js, CurrentUser user,HttpClient client, FirestoreDb firestore)
         {
             _reposCollection = firestore.Collection("RegisteredRepos");
             _js = js;
             _user = user;
-            _client = client;   
+            _client = client;
+            _userRepoCache = new Cache<UserRepo[]>(cache);
+            _repoCache = new Cache<UserRepo>(cache);
+            _ownerCache = new Cache<Owner>(cache);
         }
 
-        /// <summary>
-        /// Fetch repositories for the current user and convert to UserRepo[].
-        /// </summary>
         public async Task<UserRepo[]?> GetUserReposAsync()
         {
             if (string.IsNullOrWhiteSpace(_user.ReposUri))
                 return Array.Empty<UserRepo>();
 
-            return await _user.GetFromApiAsync<UserRepo[]>(_user.ReposUri);
+            string cacheKey = $"userrepos_{_user.UserName}";
+            if (_userRepoCache.CacheGet(cacheKey, out UserRepo[] cached))
+                return cached;
+            
+
+            var repos = await _user.GetFromApiAsync<UserRepo[]>(_user.ReposUri) ?? Array.Empty<UserRepo>();
+            return _userRepoCache.CacheSet(repos, cacheKey);
         }
 
-        public async Task<UserRepo> GetUserRepoAsync(RegistryRepo repo)
+        public async Task<UserRepo?> GetUserRepoAsync(RegistryRepo repo)
         {
-            UserRepo userRepo = await _user.GetFromApiAsync<UserRepo>(repo.ApiUrl);
-            userRepo.owner = await GetOwner(repo.UserName);
-            return userRepo;
+            string cacheKey = $"repo_{repo.UserName}_{repo.RepoName}";
+            if (_repoCache.CacheGet(cacheKey, out UserRepo cached))
+                return cached;
+            
+
+            UserRepo? userRepo = await _user.GetFromApiAsync<UserRepo>(repo.ApiUrl);
+            if (userRepo == null)
+                return null;
+            
+
+            userRepo.owner = (await GetOwnerAsync(repo.UserName))!;
+            return _repoCache.CacheSet(userRepo, cacheKey);
         }
+
         public async Task<UserRepo[]> GetUserReposAsync(RegistryRepo[] repos)
         {
-            Task<UserRepo>[] tasks = repos.Select(repo => GetUserRepoAsync(repo)).ToArray();
-            return await Task.WhenAll(tasks);
+            // Kick off all tasks
+            var tasks = repos.Select(repo => GetUserRepoAsync(repo)).ToArray();
+            var results = await Task.WhenAll(tasks);
+
+            // Drop nulls
+            return results.Where(r => r != null).ToArray()!;
         }
+
+
 
         /// <summary>
         /// Registers a repository in Firestore.
@@ -94,9 +120,25 @@ namespace premake.repositories.user
 
             return repos;
         }
-        public async Task<Owner> GetOwner(string name)
+        public async Task<Owner?> GetOwnerAsync(string name)
         {
-            return await _user.GetFromApiAsync<Owner>($"https://api.github.com/users/{name}");
-        } 
+            string cacheKey = $"owner_{name}";
+
+            // Try cache first
+            if (_ownerCache.CacheGet(cacheKey, out Owner cached))
+                return cached;
+            
+
+            // Fetch from API
+            var owner = await _user.GetFromApiAsync<Owner>($"https://api.github.com/users/{name}");
+            if (owner == null)
+                return null;
+            
+
+            // Store in cache
+            return _ownerCache.CacheSet(owner, cacheKey);
+        }
+
+
     }
 }
