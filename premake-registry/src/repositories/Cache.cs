@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Threading.Tasks;
 
 namespace premake.Repo
 {
@@ -36,6 +37,21 @@ namespace premake.Repo
             }
             return false;
         }
+
+        public T CacheCompute(object key, Func<T> callback)
+        {
+            if(CacheGet(key, out T value))
+                return value;
+            return CacheSet(callback.Invoke(), key);
+        }
+
+        public async Task<T> CacheComputeAsync(object key, Func<Task<T>> callback)
+        {
+            if (CacheGet(key, out T value))
+                return value;
+            return CacheSet(await callback.Invoke(), key);
+        }
+
         public void CacheInvalidate(object key)
         {
             var className = typeof(T).Name;  // Get the class name of T
@@ -45,6 +61,5 @@ namespace premake.Repo
         {
             return $"_{className}_{key}";
         }
-
     }
 }

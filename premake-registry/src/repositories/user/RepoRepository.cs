@@ -44,31 +44,26 @@ namespace premake.repositories.user
                 return Array.Empty<UserRepo>();
 
             string cacheKey = $"userrepos_{_user.UserName}";
-            if (_userRepoCache.CacheGet(cacheKey, out UserRepo[] cached))
-                return cached;
-            
 
-            var repos = await _user.GetFromApiAsync<UserRepo[]>(_user.ReposUri) ?? Array.Empty<UserRepo>();
-            return _userRepoCache.CacheSet(repos, cacheKey);
+            return await _userRepoCache.CacheComputeAsync(cacheKey, async () => (await _user.GetFromApiAsync<UserRepo[]>(_user.ReposUri)) ?? Array.Empty<UserRepo>()); ;
+          
         }
 
         public async Task<UserRepo?> GetUserRepoAsync(RegistryRepo repo)
         {
             string cacheKey = $"repo_{repo.UserName}_{repo.RepoName}";
-            if (_repoCache.CacheGet(cacheKey, out UserRepo cached))
-                return cached;
-            
+            return await _repoCache.CacheComputeAsync(cacheKey, async () =>
+            {
+                var userRepo = await _user.GetFromApiAsync<UserRepo>(repo.ApiUrl);
+                if (userRepo == null)
+                    return Activator.CreateInstance<UserRepo>();
 
-            UserRepo? userRepo = await _user.GetFromApiAsync<UserRepo>(repo.ApiUrl);
-            if (userRepo == null)
-                return null;
-            
-
-            userRepo.owner = (await GetOwnerAsync(repo.UserName))!;
-            return _repoCache.CacheSet(userRepo, cacheKey);
+                userRepo.owner = (await GetOwnerAsync(repo.UserName))!;
+                return userRepo;
+            });
         }
 
-        public async Task<UserRepo[]> GetUserReposAsync(RegistryRepo[] repos)
+        public async Task<UserRepo[]> GetUserReposAsyncNonNull(RegistryRepo[] repos)
         {
             // Kick off all tasks
             var tasks = repos.Select(repo => GetUserRepoAsync(repo)).ToArray();

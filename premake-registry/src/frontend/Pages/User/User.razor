@@ -46,7 +46,7 @@
     private async Task LoadReposAsync()
     {
         var all = await GitRepos.GetRegisteredReposAsync();
-        repos = (await GitRepos.GetUserReposAsync(all.ToArray())).ToList();
+        repos = (await GitRepos.GetUserReposAsyncNonNull(all.ToArray())).ToList();
     }
     private void OnLogout()
     {

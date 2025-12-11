@@ -10,6 +10,38 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Premake Registry</title>
+    <meta name="description" content="Registry for Premake modules and libraries."/>
+
+    <meta name="description" content="A public registry for Premake modules and libraries." />
+    <meta name="keywords" content="premake, premake5, build system, registry, modules, lua" />
+    <meta name="author" content="Premake Registry" />
+
+    <!-- Improve preview cards -->
+    <meta property="og:title" content="Premake Registry" />
+    <meta property="og:description" content="Discover and share Premake modules and libraries." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://premake-registry.onrender.com/" />
+    <noscript>
+        Premake Registry API
+
+        Description:
+        This is a registry for Premake modules and compatible libraries.
+
+        Available Endpoints:
+
+        GET /api/UserRepositories/search
+        Parameters:
+        type  = UserName | RepoName | Tag | Recent
+        value = string (required except for Recent)
+        count = integer (only used for Recent, default 10)
+
+        Example Requests:
+        /api/UserRepositories/search?type=UserName&value=john
+        /api/UserRepositories/search?type=RepoName&value=premake-cpp
+        /api/UserRepositories/search?type=Tag&value=graphics
+        /api/UserRepositories/search?type=Recent&count=10
+    </noscript>
+
     <script src="/_framework/aspnetcore-browser-refresh.js"></script>
     <link href="/css/premake-registry.styles.css" rel="stylesheet">
     <style>

@@ -63,7 +63,7 @@
     private async Task LoadReposAsync()
     {
         var all = await UserRepos.GetMostRecentAsync(10);
-        repos = (await GitRepos.GetUserReposAsync(all.Where(r => r.isLib == showLibs).ToArray())).ToList();
+        repos = (await GitRepos.GetUserReposAsyncNonNull(all.Where(r => r.isLib == showLibs).ToArray())).ToList();
     }
 
     private async Task ShowLibs(bool libs)
@@ -95,7 +95,7 @@
         }
 
         var results = await queryTask;
-        repos = (await GitRepos.GetUserReposAsync(results.Where(r => r.isLib == showLibs).ToArray())).ToList();
+        repos = (await GitRepos.GetUserReposAsyncNonNull(results.Where(r => r.isLib == showLibs).ToArray())).ToList();
     }
 
     private void OnAddSelected(UserRepo repo)
