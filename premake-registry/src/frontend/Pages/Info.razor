@@ -7,14 +7,20 @@
 
 @using Markdig
 @using System.Net.Http
+@using Microsoft.JSInterop
+@using premake.User
 @using premake.repositories.registry
 @using premake.repositories.registry.objects
 @using premake.repositories.user
 @using premake.repositories.user.objects
 @using premake_registry.src.frontend.Components.common.LoadingContainer
+@inject IJSRuntime JS
 @inject UserRepositories UserRepos
 @inject GitRepoRepository GitRepos
 @inject HttpClient Http
+@inject CurrentUser user
+@inject NavigationManager NavManager
+
 
 <h2>@owner / @repoName</h2>
 
@@ -26,7 +32,10 @@
             <div class="repo-header">
                 <p>@repo.RepoName</p>
                 <div class="install-block">
-                    <label>Install</label>
+                    <label class="install-command tooltip"@onclick="CopyToClipboard">
+                        Install command
+                        <span class="tooltiptext">Copy command</span>
+                    </label>
                 </div>
 
                 <div class="repo-links">
@@ -44,8 +53,16 @@
                     <div class="tags">
                         @foreach (var tag in repo.tags)
                         {
-                            <span class="tag">@tag</span>
+                            <span class="tag btn-primary">@tag</span>
                         }
+                    </div>
+                }
+                @if (isOwner)
+                {
+                    <div class="remove-section">
+                        <button @onclick="UnRegister" class ="unregister btn-primary">
+                            Unregister
+                        </button>
                     </div>
                 }
             </div>
@@ -53,13 +70,26 @@
             <div class="readme" @onclick:stopPropagation="true">
                 @((MarkupString)readmeHtml)
             </div>
+
+            @if (ShowConfirm)
+            {
+                <div class="modal-backdrop">
+                    <div class="modal">
+                        <p>Are you sure you want to unregister?</p>
+                        <div class="modal-actions">
+                            <button @onclick="ConfirmUnregister">Yes</button>
+                            <button @onclick="CancelUnregister">No</button>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     }
 </LoadingContainer>
 
 
-@code {
-#nullable enable
+    @code {
+    #nullable enable
     [Parameter] public string owner { get; set; } = string.Empty;
     [Parameter] public string repoName { get; set; } = string.Empty;
 
@@ -67,6 +97,8 @@
     private UserRepo? userRepo;
     private string readmeHtml = "<p><em>No README found.</em></p>";
     private List<Task> loadTasks = new();
+    private bool isOwner => owner == user.UserName;
+    private bool ShowConfirm = false;
 
     protected override void OnInitialized()
     {
@@ -76,9 +108,7 @@
 
     private async Task LoadRepoAsync()
     {
-        var repos = await UserRepos.FindByUserNameAsync(owner);
-        repo = repos.FirstOrDefault(r => r.RepoName.Equals(repoName, StringComparison.OrdinalIgnoreCase));
-
+        repo = await UserRepos.GetRepo(owner, repoName);
         if (repo == null)
             return;
 
@@ -93,5 +123,29 @@
         }
 
         userRepo = await GitRepos.GetUserRepoAsync(repo);
+    }
+    private async Task CopyToClipboard(MouseEventArgs args)
+    {
+        string text = "module add " + repo!.RepoUrl;
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+    }
+    private void UnRegister(MouseEventArgs args)
+    {
+        if (user.IsLoggedIn())
+        {
+            ShowConfirm = true;
+        } 
+    }
+
+    private async Task ConfirmUnregister()
+    {
+        ShowConfirm = false;
+        await GitRepos.UnregisterAsync(repo!);
+        NavManager.NavigateTo("/",forceLoad: true);
+    }
+
+    private void CancelUnregister()
+    {
+        ShowConfirm = false;
     }
 }

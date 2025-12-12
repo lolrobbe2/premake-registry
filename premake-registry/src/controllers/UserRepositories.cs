@@ -24,6 +24,11 @@ namespace premake.controllers
             _userRepositories = userRepositories;
         }
 
+        [HttpGet("pagecount")]
+        public async Task<ActionResult<int>> PageCount()
+        {
+            return Ok(await _userRepositories.GetPageCount());
+        }
         /// <summary>
         /// Unified search endpoint. Pass type + value.
         /// </summary>
@@ -31,26 +36,26 @@ namespace premake.controllers
         public async Task<ActionResult<IReadOnlyList<RegistryRepo>>> Search(
             [FromQuery] RepoSearchType type,
             [FromQuery] string value,
-            [FromQuery] int count = 10)
+            [FromQuery] int page = 10)
         {
             IReadOnlyList<RegistryRepo> results;
 
             switch (type)
             {
                 case RepoSearchType.UserName:
-                    results = await _userRepositories.FindByUserNameAsync(value);
+                    results = await _userRepositories.FindByUserNameAsync(value,page);
                     break;
 
                 case RepoSearchType.RepoName:
-                    results = await _userRepositories.FindByRepoNameAsync(value);
+                    results = await _userRepositories.FindByRepoNameAsync(value,page);
                     break;
 
                 case RepoSearchType.Tag:
-                    results = await _userRepositories.FindByTagAsync(value);
+                    results = await _userRepositories.FindByTagAsync(value, page);
                     break;
 
                 case RepoSearchType.Recent:
-                    results = await _userRepositories.GetMostRecentAsync(count);
+                    results = await _userRepositories.GetMostRecentAsync(page);
                     break;
 
                 default:
