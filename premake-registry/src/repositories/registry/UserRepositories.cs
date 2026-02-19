@@ -30,12 +30,13 @@ namespace premake.repositories.registry
         }
         public async Task<RegistryRepo[]> GetByFieldPaged(string fieldPath, string value,int page)
         {
+            string endValue = value.Substring(0, value.Length - 1) + (char)(value[^1] + 1);
             var snapshot = await _reposCollection
-             .Offset(page * pageSize)
-             .Limit(pageSize)
-             .WhereEqualTo(fieldPath, value)
-             .GetSnapshotAsync();
-
+            .OrderBy(fieldPath)
+            .StartAt(value)
+            .EndBefore(endValue)
+            .Limit(pageSize)
+            .GetSnapshotAsync();
             return snapshot.Documents.Select(d => d.ConvertTo<RegistryRepo>()).ToArray();
         }
 
