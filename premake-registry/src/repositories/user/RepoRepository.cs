@@ -101,13 +101,36 @@ namespace premake.repositories.user
             {
                 throw new ArgumentException("registering other user repos is forbidden");
             }
-            if (_user.IsLoggedIn())
+            if (_user.IsLoggedIn() && repo.UserName == _user.UserName)
             {
                 // Use RepoName + UserName as a unique key
                 var docId = $"{repo.UserName}_{repo.RepoName}";
                 var docRef = _reposCollection.Document(docId);
 
                 await docRef.SetAsync(repo, SetOptions.Overwrite);
+            }
+        }
+
+        /// <summary>
+        /// Registers a repository in Firestore.
+        /// </summary>
+        public async Task UnregisterAsync(RegistryRepo repo)
+        {
+            //TODO force clear cache.
+            if (repo == null)
+                throw new ArgumentNullException(nameof(repo));
+
+            if (repo.UserName != _user.UserName)
+            {
+                throw new ArgumentException("registering other user repos is forbidden");
+            }
+            if (_user.IsLoggedIn() && repo.UserName == _user.UserName)
+            {
+                // Use RepoName + UserName as a unique key
+                var docId = $"{repo.UserName}_{repo.RepoName}";
+                var docRef = _reposCollection.Document(docId);
+
+                await docRef.DeleteAsync();
             }
         }
 

@@ -21,6 +21,7 @@ html, body {
     background-color: var(--color-bg-dark);
     color: var(--color-text-primary);
     font-family: Consolas, Menlo, Monaco, monospace;
+    height: 100%;
 }
 
 a {

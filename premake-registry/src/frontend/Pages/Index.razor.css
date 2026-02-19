@@ -39,6 +39,27 @@
         flex: 0 0 auto;
     }
 
+.index-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+
+.page-selection {
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    margin-inline: 1rem;
+    align-items: stretch;
+    position: absolute;
+    bottom: 10%;
+    width: 100%
+}
+
+.page-input {
+    width: 2rem;
+}
 /* Mobile adjustments */
 @media (max-width: 37.5rem) { /* 600px equivalent */
     .search-bar {
@@ -50,4 +71,10 @@
         .search-bar button {
             width: 100%;
         }
+    .page-input {
+        width: calc(100%/3);
+    }
+    .page-arrow {
+        width: calc(100%/3);
+    }
 }

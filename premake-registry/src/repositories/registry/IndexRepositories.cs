@@ -39,6 +39,7 @@ namespace premake.repositories.registry
     {
         private readonly Timer _refreshTimer;
         private readonly Cache<RegistryRepo[]> _cache;
+        private readonly int pageSize = 10;
         private IndexView _commonIndex { get; set; }
         public IndexRepositories(IMemoryCache cache)
         {
@@ -53,43 +54,40 @@ namespace premake.repositories.registry
         }
 
         // --- Search by username ---
-        public async Task<IReadOnlyList<RegistryRepo>> FindByUserNameAsync(string userName)
+        public async Task<IReadOnlyList<RegistryRepo>> FindByUserNameAsync(string userName, int page)
         {
-            string cacheKey = $"index_user_{userName}";
-            if (_cache.CacheGet(cacheKey, out RegistryRepo[] cached))
-            {
-                return cached;
-            }
+            string cacheKey = $"index_user_{userName}_{page}";
+            return await _cache.CacheComputeAsync(cacheKey, async () => {
 
-            var repos = _commonIndex.libraries.First(userLibs => userLibs.Key == userName);
+                var repos = _commonIndex.libraries.First(userLibs => userLibs.Key == userName);
 
-            var convertedRepos = repos.Value.Select(lib => {
-                return new RegistryRepo() { UserName = userName, RepoName = lib.name, isLib = true };
+                var convertedRepos = repos.Value.Select(lib => {
+                    return new RegistryRepo() { UserName = userName, RepoName = lib.name, isLib = true };
+                });
+                return convertedRepos.Skip(page * pageSize).Take(pageSize).ToArray();
             });
-            return _cache.CacheSet(convertedRepos.ToArray(), cacheKey);
         }
 
         // --- Search by repository name ---
-        public async Task<IReadOnlyList<RegistryRepo>> FindByRepoNameAsync(string repoName)
+        public async Task<IReadOnlyList<RegistryRepo>> FindByRepoNameAsync(string repoName, int page)
         {
-            string cacheKey = $"index_repo_{repoName}";
-            if (_cache.CacheGet(cacheKey, out RegistryRepo[] cached))
-            {
-                return cached;
-            }
-            IList<RegistryRepo> repos = new List<RegistryRepo>();
-            foreach (var (name, libs) in _commonIndex.libraries)
-            {
-                IndexLibrary? foundLib = libs.FirstOrDefault(lib =>
+            string cacheKey = $"index_repo_{repoName}_{page}";
+
+            return await _cache.CacheComputeAsync(cacheKey, async () => {
+                IList<RegistryRepo> repos = new List<RegistryRepo>();
+                foreach (var (name, libs) in _commonIndex.libraries)
                 {
-                    return lib.name == repoName;
-                });
-                if(foundLib is not null)
-                {   
-                    repos.Add(new RegistryRepo() { UserName = name, RepoName = foundLib.name, isLib = true });
+                    IndexLibrary? foundLib = libs.FirstOrDefault(lib =>
+                    {
+                        return lib.name == repoName;
+                    });
+                    if (foundLib is not null)
+                    {
+                        repos.Add(new RegistryRepo() { UserName = name, RepoName = foundLib.name, isLib = true });
+                    }
                 }
-            }
-            return _cache.CacheSet(repos.ToArray(), cacheKey);
+                return repos.Skip(page * pageSize).Take(pageSize).ToArray();
+            });
         }
         public async Task<IReadOnlyList<RegistryRepo>> GetFirst(int count)
         {

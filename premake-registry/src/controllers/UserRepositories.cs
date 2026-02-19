@@ -26,6 +26,11 @@ namespace premake.controllers
             _indexRepositories = indexRepositories;
         }
 
+        [HttpGet("pagecount")]
+        public async Task<ActionResult<int>> PageCount()
+        {
+            return Ok(await _userRepositories.GetPageCount());
+        }
         /// <summary>
         /// Unified search endpoint. Pass type + value.
         /// </summary>
@@ -33,7 +38,7 @@ namespace premake.controllers
         public async Task<ActionResult<IReadOnlyList<RegistryRepo>>> Search(
             [FromQuery] RepoSearchType type,
             [FromQuery] string value,
-            [FromQuery] int count = 10)
+            [FromQuery] int page = 10)
         {
             IReadOnlyList<RegistryRepo> results;
             IReadOnlyList<RegistryRepo> indexResults;
@@ -41,22 +46,22 @@ namespace premake.controllers
             switch (type)
             {
                 case RepoSearchType.UserName:
-                    results = await _userRepositories.FindByUserNameAsync(value);
-                    indexResults = await _indexRepositories.FindByUserNameAsync(value);
+                    results = await _userRepositories.FindByUserNameAsync(value,page);
+                    indexResults = await _indexRepositories.FindByUserNameAsync(value, page);
                     break;
 
                 case RepoSearchType.RepoName:
-                    results = await _userRepositories.FindByRepoNameAsync(value);
-                    indexResults = await _indexRepositories.FindByRepoNameAsync(value);
+                    results = await _userRepositories.FindByRepoNameAsync(value,page);
+                    indexResults = await _indexRepositories.FindByRepoNameAsync(value, page);
                     break;
 
                 case RepoSearchType.Tag:
-                    results = await _userRepositories.FindByTagAsync(value);
+                    results = await _userRepositories.FindByTagAsync(value, page);
                     indexResults = new List<RegistryRepo>();
                     break;
 
                 case RepoSearchType.Recent:
-                    results = await _userRepositories.GetMostRecentAsync(count);
+                    results = await _userRepositories.GetMostRecentAsync(page);
                     indexResults = new List<RegistryRepo>();
                     break;
 

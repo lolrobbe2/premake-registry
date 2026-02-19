@@ -8,7 +8,8 @@
 @using premake.User
 @using premake.repositories.registry.objects
 @using premake.repositories.user
-    
+@inject NavigationManager NavManager
+
 
 <h3>Register Repository</h3>
 
@@ -80,7 +81,7 @@
 
     private async Task RegisterRepoAsync()
     {
-        
+
 
         repoModel.tags = tags
             .Select(t => t.Value)
@@ -88,6 +89,7 @@
             .ToArray();
 
         await GitRepos.RegisterAsync(repoModel);
+        NavManager.NavigateTo($"/info/{repoModel.UserName}/{repoModel.RepoName}",forceLoad: true);
         // show confirmation or redirect
     }
 

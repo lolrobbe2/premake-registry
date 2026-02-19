@@ -14,10 +14,14 @@
 @using premake.repositories.user
 @using premake.repositories.user.objects
 @using premake_registry.src.frontend.Components.common.LoadingContainer
+@inject IJSRuntime JS
 @inject UserRepositories UserRepos
 @inject GitRepoRepository GitRepos
 @inject IndexRepositories IndexRepos
 @inject HttpClient Http
+@inject CurrentUser user
+@inject NavigationManager NavManager
+
 @inject CurrentUser User;
 @inject IJSRuntime JSRuntime;
 <h2>@owner / @repoName</h2>
@@ -29,8 +33,11 @@
         <div class="info-container">
             <div class="repo-header">
                 <p>@repo.RepoName</p>
-                <div class="install-block" @onclick="CopyCommandToClipboard" title="Click to copy">
-                    <label>Install</label>
+                <div class="install-block">
+                    <label class="install-command tooltip"@onclick="CopyToClipboard">
+                        Install command
+                        <span class="tooltiptext">Copy command</span>
+                    </label>
                 </div>
 
                 <div class="repo-links">
@@ -48,8 +55,16 @@
                     <div class="tags">
                         @foreach (var tag in repo.tags)
                         {
-                            <span class="tag">@tag</span>
+                            <span class="tag btn-primary">@tag</span>
                         }
+                    </div>
+                }
+                @if (isOwner)
+                {
+                    <div class="remove-section">
+                        <button @onclick="UnRegister" class ="unregister btn-primary">
+                            Unregister
+                        </button>
                     </div>
                 }
             </div>
@@ -57,6 +72,19 @@
             <div class="readme" @onclick:stopPropagation="true">
                 @((MarkupString)readmeHtml)
             </div>
+
+            @if (ShowConfirm)
+            {
+                <div class="modal-backdrop">
+                    <div class="modal">
+                        <p>Are you sure you want to unregister?</p>
+                        <div class="modal-actions">
+                            <button @onclick="ConfirmUnregister">Yes</button>
+                            <button @onclick="CancelUnregister">No</button>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     }
 </LoadingContainer>
@@ -75,7 +103,9 @@
         .UseAdvancedExtensions()
         .UseAutoLinks()
         .UseBootstrap()
-        .Build();
+        .Build();    private bool isOwner => owner == user.UserName;
+    private bool ShowConfirm = false;
+
     protected override void OnInitialized()
     {
         // Kick off all async work and track in loadTasks
@@ -84,11 +114,11 @@
 
     private async Task LoadRepoAsync()
     {
-        var repos = await UserRepos.FindByUserNameAsync(owner);
+        var repos = await UserRepos.FindByUserNameAsync(owner,0);
         repo = repos.FirstOrDefault(r => r.RepoName.Equals(repoName, StringComparison.OrdinalIgnoreCase));
 
         if (repo == null) {
-            repos = await IndexRepos.FindByUserNameAsync(owner);
+            repos = await IndexRepos.FindByUserNameAsync(owner,0);
             repo = repos.FirstOrDefault(r => r.RepoName.Equals(repoName, StringComparison.OrdinalIgnoreCase));
         }
         if (repo == null)
@@ -117,5 +147,29 @@
 
         // Optional: Add a simple notification or console log
         Console.WriteLine("Copied to clipboard!");
+    }
+    private async Task CopyToClipboard(MouseEventArgs args)
+    {
+        string text = "module add " + repo!.RepoUrl;
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+    }
+    private void UnRegister(MouseEventArgs args)
+    {
+        if (user.IsLoggedIn())
+        {
+            ShowConfirm = true;
+        } 
+    }
+
+    private async Task ConfirmUnregister()
+    {
+        ShowConfirm = false;
+        await GitRepos.UnregisterAsync(repo!);
+        NavManager.NavigateTo("/",forceLoad: true);
+    }
+
+    private void CancelUnregister()
+    {
+        ShowConfirm = false;
     }
 }

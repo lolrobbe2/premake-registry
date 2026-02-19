@@ -17,7 +17,6 @@ namespace premake.Repo
 
             // Using class name as part of the cache key along with the key
             _cache.Set(GetCacheKey(className, key), item, TimeSpan.FromMinutes(5));
-
             return item;
         }
         /// <summary>

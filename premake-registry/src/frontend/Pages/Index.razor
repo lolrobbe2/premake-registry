@@ -15,34 +15,53 @@
 @inject NavigationManager NavManager;
 
 <h3>Repositories</h3>
+<div class="index-container">
+    <div class="search-bar">
+        <select @bind="selectedFilter">
+            <option value="UserName">User Name</option>
+            <option value="RepoName">Repository Name</option>
+            <option value="Tag">Tag</option>
+            <option value="Recent">Most Recent</option>
+        </select>
 
-<div class="search-bar">
-    <select @bind="selectedFilter">
-        <option value="UserName">User Name</option>
-        <option value="RepoName">Repository Name</option>
-        <option value="Tag">Tag</option>
-        <option value="Recent">Most Recent</option>
-    </select>
+        <input type="text" @bind="searchTerm" placeholder="Enter search value..." @onkeydown="Search" />
+        <button class="btn btn-primary" @onclick="OnSearch">Search</button>
+    </div>
 
-    <input type="text" @bind="searchTerm" placeholder="Enter search value..." />
-    <button class="btn btn-primary" @onclick="OnSearch">Search</button>
+    <div class="filters">
+        @if (!showLibs)
+        {
+            <button class="btn btn-primary" @onclick="() => ShowLibs(true)">Show Libraries</button>
+        }
+        else
+        {
+            <button class="btn btn-primary" @onclick="() => ShowLibs(false)">Show Modules</button>
+        }
+    </div>
+
+    <LoadingContainer Tasks="loadTasks">
+        <RepoList Repos="repos.ToArray()" OnAdd="OnAddSelected" IsInfo="true" />
+    </LoadingContainer>
+
+    <div class="page-selection">
+        <button class="page-arrow btn-primary"
+                @onclick="GoPrevious"
+                disabled="@IsFirstPage">
+            ‹
+        </button>
+
+        <input type="number"
+               class="page-input"
+               @bind="pageNumber"
+               @bind:after="OnPageChanged"
+               min="1" />
+
+        <button class="page-arrow btn-primary"
+                @onclick="GoNext">
+            ›
+        </button>
+    </div>
 </div>
-
-<div class="filters">
-    @if (!showLibs)
-    {
-        <button class="btn btn-primary" @onclick="() => ShowLibs(true)">Show Libraries</button>
-    }
-    else
-    {
-        <button class="btn btn-primary" @onclick="() => ShowLibs(false)">Show Modules</button>
-    }
-</div>
-
-<LoadingContainer Tasks="loadTasks">
-    <RepoList Repos="repos.ToArray()" OnAdd="OnAddSelected" IsInfo="true" />
-</LoadingContainer>
-
 
 @code {
     #nullable enable
@@ -51,11 +70,42 @@
     private bool showLibs = true;
     private string searchTerm = string.Empty;
     private string selectedFilter = "Recent";
-
+    private int pageNumber = 1;
     [Inject] private UserRepositories UserRepos { get; set; } = default!;
     [Inject] private IndexRepositories IndexRepos { get; set; } = default!;
 
     [Inject] private GitRepoRepository GitRepos { get; set; } = default!;
+
+    private bool IsFirstPage
+    {
+        get => pageNumber <= 1;  
+    }
+
+    private async Task OnPageChanged()
+    {
+        if (pageNumber < 1)
+        {
+            pageNumber++;
+        }
+
+        await ShowLibs(showLibs);
+    }
+
+    private async Task GoPrevious()
+    {
+        if (pageNumber > 1)
+        {
+            pageNumber--;
+            await ShowLibs(showLibs);
+        }
+    }
+
+    private async Task GoNext()
+    {
+        pageNumber++;
+        await ShowLibs(showLibs);
+    }
+
     protected override void OnInitialized()
     {
         var load = LoadReposAsync();
@@ -64,12 +114,17 @@
 
     private async Task LoadReposAsync()
     {
-        var all = await UserRepos.GetMostRecentAsync(10);
+        var all = await UserRepos.GetMostRecentAsync(pageNumber - 1);
         repos = (await GitRepos.GetUserReposAsyncNonNull(all.Concat(await IndexRepos.GetFirst(10)).Where(r => r.isLib == showLibs).ToArray())).ToList();
     }
 
     private async Task ShowLibs(bool libs)
     {
+        int maxPages = await UserRepos.GetPageCount();
+        if (pageNumber-1 > maxPages)
+        {
+            pageNumber = maxPages + 1;
+        }
         showLibs = libs;
         var load = LoadReposAsync();
         loadTasks = new[] { load };
@@ -82,21 +137,21 @@
         switch (selectedFilter)
         {
             case "UserName":
-                queryTask = UserRepos.FindByUserNameAsync(searchTerm);
-                indexTask = IndexRepos.FindByUserNameAsync(searchTerm);
+                queryTask = UserRepos.FindByUserNameAsync(searchTerm, pageNumber);
+                indexTask = IndexRepos.FindByUserNameAsync(searchTerm, pageNumber);
                 break;
             case "RepoName":
-                queryTask = UserRepos.FindByRepoNameAsync(searchTerm);
-                indexTask = IndexRepos.FindByRepoNameAsync(searchTerm);
+                queryTask = UserRepos.FindByRepoNameAsync(searchTerm, pageNumber);
+                indexTask = IndexRepos.FindByRepoNameAsync(searchTerm, pageNumber);
                 break;
             case "Tag":
-                queryTask = UserRepos.FindByTagAsync(searchTerm);
+                queryTask = UserRepos.FindByTagAsync(searchTerm, pageNumber);
                 indexTask = Task.FromResult<IReadOnlyList<RegistryRepo>>(Array.Empty<RegistryRepo>());
                 break;
             case "Recent":
             default:
-                queryTask = UserRepos.GetMostRecentAsync(10);
                 indexTask = IndexRepos.GetFirst(10);
+                queryTask = UserRepos.GetMostRecentAsync(pageNumber - 1);
                 break;
         }
 
@@ -109,5 +164,13 @@
     private void OnAddSelected(UserRepo repo)
     {
         NavManager.NavigateTo($"/info/{repo.full_name}");
+    }
+    private async Task Search(KeyboardEventArgs args)
+    {
+        if(args.Key == "Enter")
+        {
+            var load = OnSearch();
+            loadTasks = new[] { load };
+        }
     }
 }
