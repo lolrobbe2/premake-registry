@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -64,6 +65,7 @@ namespace premake.controllers
             return Results.SignIn(new ClaimsPrincipal(identity), properties);
         }
         [HttpGet("whoami")]
+        [Authorize]
         public async Task<IResult> WhoAmi()
         {
             var result = await HttpContext.AuthenticateAsync();
@@ -78,6 +80,7 @@ namespace premake.controllers
         }
 
         [HttpGet("logout")]
+        [Authorize]
         public async Task<IResult> Logout()
         {
             // Clear the local cookie

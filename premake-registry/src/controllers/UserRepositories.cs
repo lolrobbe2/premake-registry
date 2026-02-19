@@ -37,7 +37,7 @@ namespace premake.controllers
         [HttpGet("search")]
         public async Task<ActionResult<IReadOnlyList<RegistryRepo>>> Search(
             [FromQuery] RepoSearchType type,
-            [FromQuery] string value,
+            [FromQuery] string? value,
             [FromQuery] int page = 10)
         {
             IReadOnlyList<RegistryRepo> results;
@@ -46,17 +46,17 @@ namespace premake.controllers
             switch (type)
             {
                 case RepoSearchType.UserName:
-                    results = await _userRepositories.FindByUserNameAsync(value,page);
-                    indexResults = await _indexRepositories.FindByUserNameAsync(value, page);
+                    results = await _userRepositories.FindByUserNameAsync(value ?? "", page);
+                    indexResults = await _indexRepositories.FindByUserNameAsync(value ?? "", page);
                     break;
 
                 case RepoSearchType.RepoName:
-                    results = await _userRepositories.FindByRepoNameAsync(value,page);
-                    indexResults = await _indexRepositories.FindByRepoNameAsync(value, page);
+                    results = await _userRepositories.FindByRepoNameAsync(value ?? "", page);
+                    indexResults = await _indexRepositories.FindByRepoNameAsync(value ?? "", page);
                     break;
 
                 case RepoSearchType.Tag:
-                    results = await _userRepositories.FindByTagAsync(value, page);
+                    results = await _userRepositories.FindByTagAsync(value ?? "", page);
                     indexResults = new List<RegistryRepo>();
                     break;
 
