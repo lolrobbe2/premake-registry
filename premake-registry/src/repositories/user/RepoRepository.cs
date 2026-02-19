@@ -56,7 +56,21 @@ namespace premake.repositories.user
             {
                 var userRepo = await _user.GetFromApiAsync<UserRepo>(repo.ApiUrl);
                 if (userRepo == null)
-                    return Activator.CreateInstance<UserRepo>();
+                {
+                    var owner = new Owner()
+                    {
+                        login = repo.UserName,
+                        // The web profile: https://github.com/UserName
+                        html_url = $"https://github.com/{repo.UserName}",
+
+                        // The avatar: https://github.com/UserName.png
+                        avatar_url = $"https://github.com/{repo.UserName}.png",
+
+                        // The API endpoint: https://api.github.com/users/UserName
+                    };
+                    return new UserRepo() { description = "", full_name = $"{repo.UserName}/{repo.RepoName}", issues = 0, name = repo.RepoName, owner = owner, url = $"https://github.com/{repo.UserName}/{repo.RepoName}", html_url = "" };
+                }
+                  
 
                 userRepo.owner = (await GetOwnerAsync(repo.UserName))!;
                 return userRepo;

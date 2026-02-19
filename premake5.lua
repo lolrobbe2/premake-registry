@@ -36,7 +36,8 @@ architecture "x86_64"
          "OpenIddict.Client.WebIntegration:7.2.0",
          "OpenIddict.Client.SystemNetHttp:7.2.0",
          "OpenIddict.Validation.SystemNetHttp:7.2.0",
-         "Markdig:0.44.0"
+         "Markdig:0.44.0",
+         "YamlDotNet:16.3.0"
       }
       vsprops {
          PublishSingleFile = "true",

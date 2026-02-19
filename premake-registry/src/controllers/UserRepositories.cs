@@ -2,8 +2,9 @@
 using premake.repositories.registry;
 using premake.repositories.registry.objects;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-
+#nullable enable
 namespace premake.controllers
 {
     public enum RepoSearchType
@@ -18,10 +19,11 @@ namespace premake.controllers
     public class UserRepositoriesController : ControllerBase
     {
         private readonly UserRepositories _userRepositories;
-
-        public UserRepositoriesController(UserRepositories userRepositories)
+        private readonly IndexRepositories _indexRepositories;
+        public UserRepositoriesController(UserRepositories userRepositories, IndexRepositories indexRepositories)
         {
             _userRepositories = userRepositories;
+            _indexRepositories = indexRepositories;
         }
 
         /// <summary>
@@ -34,30 +36,35 @@ namespace premake.controllers
             [FromQuery] int count = 10)
         {
             IReadOnlyList<RegistryRepo> results;
+            IReadOnlyList<RegistryRepo> indexResults;
 
             switch (type)
             {
                 case RepoSearchType.UserName:
                     results = await _userRepositories.FindByUserNameAsync(value);
+                    indexResults = await _indexRepositories.FindByUserNameAsync(value);
                     break;
 
                 case RepoSearchType.RepoName:
                     results = await _userRepositories.FindByRepoNameAsync(value);
+                    indexResults = await _indexRepositories.FindByRepoNameAsync(value);
                     break;
 
                 case RepoSearchType.Tag:
                     results = await _userRepositories.FindByTagAsync(value);
+                    indexResults = new List<RegistryRepo>();
                     break;
 
                 case RepoSearchType.Recent:
                     results = await _userRepositories.GetMostRecentAsync(count);
+                    indexResults = new List<RegistryRepo>();
                     break;
 
                 default:
                     return BadRequest("Invalid search type.");
             }
 
-            return Ok(results);
+            return Ok(results.Concat(indexResults).ToList());
         }
     }
 }

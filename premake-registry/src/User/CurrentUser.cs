@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using OpenIddict.Abstractions;
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static Google.Rpc.Context.AttributeContext.Types;
 #nullable enable
 namespace premake.User
 {
@@ -74,6 +76,32 @@ namespace premake.User
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             return result;
+        }
+        public async Task<string?> GetStringAsync(string apiUrl)
+        {
+            // Attach token if present
+            if (IsLoggedIn())
+            {
+                var token = await GetToken();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", token);
+                }
+            }
+            // GitHub requires a User-Agent header
+            if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
+            {
+                _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("premake-registry");
+            }
+            try
+            {
+                return await _httpClient.GetStringAsync(apiUrl);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

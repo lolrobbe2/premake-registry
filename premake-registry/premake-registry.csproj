@@ -41,14 +41,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\Config.cs" />
-    <Compile Include="src\controllers\UserRepositories.cs" />
     <Compile Include="src\FireBase\ServiceAccountCredentials.cs" />
     <Compile Include="src\FireBase\ServiceCollectionExtension.cs" />
     <Compile Include="src\Main.cs" />
+    <Compile Include="src\utils\ExtractUtils.cs" />
+    <Compile Include="src\repositories\registry\IndexRepositories.cs" />
+    <Compile Include="src\utils\YamlSerializer.cs" />
     <Compile Include="src\User\BrowserCache.cs" />
     <Compile Include="src\User\CurrentUser.cs" />
     <Compile Include="src\controllers\AuthController.cs" />
     <Compile Include="src\controllers\HealthController.cs" />
+    <Compile Include="src\controllers\UserRepositories.cs" />
     <Compile Include="src\repositories\Cache.cs" />
     <Compile Include="src\repositories\registry\UserRepositories.cs" />
     <Compile Include="src\repositories\registry\objects\RegistryRepo.cs" />
@@ -71,5 +74,6 @@
     <PackageReference Include="OpenIddict.Client.SystemNetHttp" Version="7.2.0" />
     <PackageReference Include="OpenIddict.Validation.SystemNetHttp" Version="7.2.0" />
     <PackageReference Include="Markdig" Version="0.44.0" />
+    <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 </Project>

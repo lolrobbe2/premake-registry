@@ -7,6 +7,8 @@
 
 @using Markdig
 @using System.Net.Http
+@using Microsoft.JSInterop
+@using premake.User
 @using premake.repositories.registry
 @using premake.repositories.registry.objects
 @using premake.repositories.user
@@ -14,8 +16,10 @@
 @using premake_registry.src.frontend.Components.common.LoadingContainer
 @inject UserRepositories UserRepos
 @inject GitRepoRepository GitRepos
+@inject IndexRepositories IndexRepos
 @inject HttpClient Http
-
+@inject CurrentUser User;
+@inject IJSRuntime JSRuntime;
 <h2>@owner / @repoName</h2>
 
 
@@ -25,7 +29,7 @@
         <div class="info-container">
             <div class="repo-header">
                 <p>@repo.RepoName</p>
-                <div class="install-block">
+                <div class="install-block" @onclick="CopyCommandToClipboard" title="Click to copy">
                     <label>Install</label>
                 </div>
 
@@ -58,8 +62,8 @@
 </LoadingContainer>
 
 
-@code {
-#nullable enable
+    @code {
+    #nullable enable
     [Parameter] public string owner { get; set; } = string.Empty;
     [Parameter] public string repoName { get; set; } = string.Empty;
 
@@ -67,7 +71,11 @@
     private UserRepo? userRepo;
     private string readmeHtml = "<p><em>No README found.</em></p>";
     private List<Task> loadTasks = new();
-
+    private MarkdownPipeline pipeline = new MarkdownPipelineBuilder()
+        .UseAdvancedExtensions()
+        .UseAutoLinks()
+        .UseBootstrap()
+        .Build();
     protected override void OnInitialized()
     {
         // Kick off all async work and track in loadTasks
@@ -79,19 +87,35 @@
         var repos = await UserRepos.FindByUserNameAsync(owner);
         repo = repos.FirstOrDefault(r => r.RepoName.Equals(repoName, StringComparison.OrdinalIgnoreCase));
 
+        if (repo == null) {
+            repos = await IndexRepos.FindByUserNameAsync(owner);
+            repo = repos.FirstOrDefault(r => r.RepoName.Equals(repoName, StringComparison.OrdinalIgnoreCase));
+        }
         if (repo == null)
             return;
 
-        try
-        {
-            var md = await Http.GetStringAsync(repo.RepoReadme);
-            readmeHtml = Markdown.ToHtml(md);
-        }
-        catch
-        {
-            readmeHtml = "<p><em>Could not load README.md</em></p>";
-        }
+        var md = await User.GetStringAsync($"{repo.RepoMainReadme}.md"); 
+        if(md is null)
+            md = await User.GetStringAsync($"{repo.RepoMasterReadme}.md");
+        else if (md is null)
+            md = await User.GetStringAsync(repo.RepoMainReadme);
+        else if (md is null)
+            md = await User.GetStringAsync(repo.RepoMasterReadme);
+        
+        if (md is not null)
+           readmeHtml = Markdown.ToHtml(md,pipeline);
+        else 
+           readmeHtml = "<p><em>Could not load README.md</em></p>";
+        
 
         userRepo = await GitRepos.GetUserRepoAsync(repo);
+    }
+    private string InstallCommand => $"add {(repo!.isLib ? "library" : "module")} {owner}/{repoName}";
+    private async Task CopyCommandToClipboard()
+    {
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", InstallCommand);
+
+        // Optional: Add a simple notification or console log
+        Console.WriteLine("Copied to clipboard!");
     }
 }

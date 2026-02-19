@@ -53,6 +53,8 @@
     private string selectedFilter = "Recent";
 
     [Inject] private UserRepositories UserRepos { get; set; } = default!;
+    [Inject] private IndexRepositories IndexRepos { get; set; } = default!;
+
     [Inject] private GitRepoRepository GitRepos { get; set; } = default!;
     protected override void OnInitialized()
     {
@@ -63,7 +65,7 @@
     private async Task LoadReposAsync()
     {
         var all = await UserRepos.GetMostRecentAsync(10);
-        repos = (await GitRepos.GetUserReposAsyncNonNull(all.Where(r => r.isLib == showLibs).ToArray())).ToList();
+        repos = (await GitRepos.GetUserReposAsyncNonNull(all.Concat(await IndexRepos.GetFirst(10)).Where(r => r.isLib == showLibs).ToArray())).ToList();
     }
 
     private async Task ShowLibs(bool libs)
@@ -76,25 +78,31 @@
     private async Task OnSearch()
     {
         Task<IReadOnlyList<RegistryRepo>> queryTask;
-
+        Task<IReadOnlyList<RegistryRepo>> indexTask;
         switch (selectedFilter)
         {
             case "UserName":
                 queryTask = UserRepos.FindByUserNameAsync(searchTerm);
+                indexTask = IndexRepos.FindByUserNameAsync(searchTerm);
                 break;
             case "RepoName":
                 queryTask = UserRepos.FindByRepoNameAsync(searchTerm);
+                indexTask = IndexRepos.FindByRepoNameAsync(searchTerm);
                 break;
             case "Tag":
                 queryTask = UserRepos.FindByTagAsync(searchTerm);
+                indexTask = Task.FromResult<IReadOnlyList<RegistryRepo>>(Array.Empty<RegistryRepo>());
                 break;
             case "Recent":
             default:
                 queryTask = UserRepos.GetMostRecentAsync(10);
+                indexTask = IndexRepos.GetFirst(10);
                 break;
         }
 
-        var results = await queryTask;
+        var queryResults = await queryTask;
+        var indexResults = await indexTask;
+        var results = queryResults.Concat(indexResults);
         repos = (await GitRepos.GetUserReposAsyncNonNull(results.Where(r => r.isLib == showLibs).ToArray())).ToList();
     }
 
