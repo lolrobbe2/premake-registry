@@ -24,7 +24,7 @@
             <option value="Recent">Most Recent</option>
         </select>
 
-        <input type="text" @bind="searchTerm" placeholder="Enter search value..." @onkeydown="Search" />
+        <input type="text" @oninput="(e) => searchTerm = e.Value?.ToString()" placeholder="Enter search value..." @onkeydown="Search" />
         <button class="btn btn-primary" @onclick="OnSearch">Search</button>
     </div>
 
@@ -115,7 +115,7 @@
     private async Task LoadReposAsync()
     {
         var all = await UserRepos.GetMostRecentAsync(pageNumber - 1);
-        repos = (await GitRepos.GetUserReposAsyncNonNull(all.Concat(await IndexRepos.GetFirst(10)).Where(r => r.isLib == showLibs).ToArray())).ToList();
+        repos = (await GitRepos.GetUserReposAsyncNonNull(all.Concat(await IndexRepos.GetSorted(pageNumber - 1)).Where(r => r.isLib == showLibs).ToArray())).ToList();
     }
 
     private async Task ShowLibs(bool libs)
@@ -137,20 +137,20 @@
         switch (selectedFilter)
         {
             case "UserName":
-                queryTask = UserRepos.FindByUserNameAsync(searchTerm, pageNumber);
-                indexTask = IndexRepos.FindByUserNameAsync(searchTerm, pageNumber);
+                queryTask = UserRepos.FindByUserNameAsync(searchTerm, pageNumber - 1);
+                indexTask = IndexRepos.FindByUserNameAsync(searchTerm, pageNumber - 1);
                 break;
             case "RepoName":
-                queryTask = UserRepos.FindByRepoNameAsync(searchTerm, pageNumber);
-                indexTask = IndexRepos.FindByRepoNameAsync(searchTerm, pageNumber);
+                queryTask = UserRepos.FindByRepoNameAsync(searchTerm, pageNumber - 1);
+                indexTask = IndexRepos.FindByRepoNameAsync(searchTerm, pageNumber -1);
                 break;
             case "Tag":
-                queryTask = UserRepos.FindByTagAsync(searchTerm, pageNumber);
+                queryTask = UserRepos.FindByTagAsync(searchTerm, pageNumber - 1);
                 indexTask = Task.FromResult<IReadOnlyList<RegistryRepo>>(Array.Empty<RegistryRepo>());
                 break;
             case "Recent":
             default:
-                indexTask = IndexRepos.GetFirst(10);
+                indexTask = IndexRepos.GetSorted(pageNumber - 1);
                 queryTask = UserRepos.GetMostRecentAsync(pageNumber - 1);
                 break;
         }

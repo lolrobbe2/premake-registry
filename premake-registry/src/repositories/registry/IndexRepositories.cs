@@ -59,7 +59,7 @@ namespace premake.repositories.registry
             string cacheKey = $"index_user_{userName}_{page}";
             return await _cache.CacheComputeAsync(cacheKey, async () => {
 
-                var repos = _commonIndex.libraries.First(userLibs => userLibs.Key == userName);
+                var repos = _commonIndex.libraries.First(userLibs => userLibs.Key.StartsWith(userName));
 
                 var convertedRepos = repos.Value.Select(lib => {
                     return new RegistryRepo() { UserName = userName, RepoName = lib.name, isLib = true };
@@ -79,7 +79,7 @@ namespace premake.repositories.registry
                 {
                     IndexLibrary? foundLib = libs.FirstOrDefault(lib =>
                     {
-                        return lib.name == repoName;
+                        return lib.name.StartsWith(repoName);
                     });
                     if (foundLib is not null)
                     {
@@ -89,9 +89,9 @@ namespace premake.repositories.registry
                 return repos.Skip(page * pageSize).Take(pageSize).ToArray();
             });
         }
-        public async Task<IReadOnlyList<RegistryRepo>> GetFirst(int count)
+        public async Task<IReadOnlyList<RegistryRepo>> GetSorted(int page)
         {
-            string cacheKey = $"index_recent_{count}";
+            string cacheKey = $"index_recent_{page}";
             if (_cache.CacheGet(cacheKey, out RegistryRepo[] cached))
             {
                 return cached;
@@ -107,7 +107,8 @@ namespace premake.repositories.registry
                 // 2. Sort the entire flattened list by the Repository Name
                 .OrderBy(r => r.RepoName)
                 // 3. Take only the requested amount
-                .Take(count)
+                .Skip(pageSize * page)
+                .Take(pageSize)
                 .ToList();
 
             return _cache.CacheSet(libs.ToArray(), cacheKey);
