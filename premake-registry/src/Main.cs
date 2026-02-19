@@ -13,6 +13,7 @@ using premake.repositories.registry;
 using premake.repositories.user;
 using premake.User;
 using premake_registry.src.frontend.Pages;
+using src.utils;
 using System;
 using System.IO;
 using System.Net;
@@ -107,6 +108,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CurrentUser>();
 builder.Services.AddScoped<GitRepoRepository>();
 builder.Services.AddScoped<UserRepositories>();
+builder.Services.AddSingleton<IndexRepositories>();
 var host = builder.Build();
 
 if (host.Environment.IsDevelopment())
@@ -125,6 +127,7 @@ host.UseAuthentication();
 host.UseAuthorization();
 host.MapControllers();
 host.MapRazorPages();
+host.UseStaticFiles();
 host.UseRouting();
 host.MapBlazorHub();
 host.MapFallbackToPage("/_Host");

@@ -72,6 +72,8 @@
     private string selectedFilter = "Recent";
     private int pageNumber = 1;
     [Inject] private UserRepositories UserRepos { get; set; } = default!;
+    [Inject] private IndexRepositories IndexRepos { get; set; } = default!;
+
     [Inject] private GitRepoRepository GitRepos { get; set; } = default!;
 
     private bool IsFirstPage
@@ -113,7 +115,7 @@
     private async Task LoadReposAsync()
     {
         var all = await UserRepos.GetMostRecentAsync(pageNumber - 1);
-        repos = (await GitRepos.GetUserReposAsyncNonNull(all.Where(r => r.isLib == showLibs).ToArray())).ToList();
+        repos = (await GitRepos.GetUserReposAsyncNonNull(all.Concat(await IndexRepos.GetFirst(10)).Where(r => r.isLib == showLibs).ToArray())).ToList();
     }
 
     private async Task ShowLibs(bool libs)
@@ -131,24 +133,31 @@
     private async Task OnSearch()
     {
         Task<IReadOnlyList<RegistryRepo>> queryTask;
+        Task<IReadOnlyList<RegistryRepo>> indexTask;
         switch (selectedFilter)
         {
             case "UserName":
-                queryTask = UserRepos.FindByUserNameAsync(searchTerm, pageNumber - 1);
+                queryTask = UserRepos.FindByUserNameAsync(searchTerm, pageNumber);
+                indexTask = IndexRepos.FindByUserNameAsync(searchTerm, pageNumber);
                 break;
             case "RepoName":
-                queryTask = UserRepos.FindByRepoNameAsync(searchTerm, pageNumber - 1);
+                queryTask = UserRepos.FindByRepoNameAsync(searchTerm, pageNumber);
+                indexTask = IndexRepos.FindByRepoNameAsync(searchTerm, pageNumber);
                 break;
             case "Tag":
-                queryTask = UserRepos.FindByTagAsync(searchTerm, pageNumber - 1);
+                queryTask = UserRepos.FindByTagAsync(searchTerm, pageNumber);
+                indexTask = Task.FromResult<IReadOnlyList<RegistryRepo>>(Array.Empty<RegistryRepo>());
                 break;
             case "Recent":
             default:
+                indexTask = IndexRepos.GetFirst(10);
                 queryTask = UserRepos.GetMostRecentAsync(pageNumber - 1);
                 break;
         }
 
-        var results = await queryTask;
+        var queryResults = await queryTask;
+        var indexResults = await indexTask;
+        var results = queryResults.Concat(indexResults);
         repos = (await GitRepos.GetUserReposAsyncNonNull(results.Where(r => r.isLib == showLibs).ToArray())).ToList();
     }
 

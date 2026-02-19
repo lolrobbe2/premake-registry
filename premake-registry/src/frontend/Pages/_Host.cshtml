@@ -8,6 +8,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Premake Registry</title>
     <meta name="description" content="Registry for Premake modules and libraries."/>
@@ -132,6 +133,13 @@
             justify-content: space-between;
         }
 
+        .readme img {
+            max-width: 100%; /* Nooit breder dan de tekstkolom */
+            height: auto; /* Behoud de verhoudingen */
+            display: block; /* Voorkomt witruimte onder de afbeelding */
+            margin: 1rem auto; /* Centreert de afbeelding met wat ruimte */
+            border-radius: 6px; /* Optioneel: geeft het de GitHub look */
+        }
     </style>
 </head>
 <body>

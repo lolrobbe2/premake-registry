@@ -29,7 +29,9 @@ namespace premake.repositories.registry.objects
         /// <summary>
         /// Getter to get the raw readme link
         /// </summary>
-        public string RepoReadme { get => $"https://raw.githubusercontent.com/{UserName}/{RepoName}/refs/heads/main/README.md"; }
+        public string RepoMainReadme { get => $"https://raw.githubusercontent.com/{UserName}/{RepoName}/main/README"; }
+        public string RepoMasterReadme { get => $"https://raw.githubusercontent.com/{UserName}/{RepoName}/master/README"; }
+
         public string ApiUrl => $"https://api.github.com/repos/{UserName}/{RepoName}";
     }
 }

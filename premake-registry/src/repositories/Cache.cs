@@ -56,6 +56,21 @@ namespace premake.Repo
             var className = typeof(T).Name;  // Get the class name of T
             _cache.Remove(GetCacheKey(className, key));
         }
+        public void CacheClear()
+        {
+            var classNamePrefix = $"_{typeof(T).Name}_";
+
+            if (_cache is MemoryCache concreteCache)
+            {
+                foreach (var entry in concreteCache.Keys)
+                {
+                    if (entry is string s && s.StartsWith(classNamePrefix))
+                    {
+                        _cache.Remove(s);
+                    }
+                }
+            }
+        }
         private string GetCacheKey(string className, object key)
         {
             return $"_{className}_{key}";

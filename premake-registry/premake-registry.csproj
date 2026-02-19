@@ -44,6 +44,9 @@
     <Compile Include="src\FireBase\ServiceAccountCredentials.cs" />
     <Compile Include="src\FireBase\ServiceCollectionExtension.cs" />
     <Compile Include="src\Main.cs" />
+    <Compile Include="src\utils\ExtractUtils.cs" />
+    <Compile Include="src\repositories\registry\IndexRepositories.cs" />
+    <Compile Include="src\utils\YamlSerializer.cs" />
     <Compile Include="src\User\BrowserCache.cs" />
     <Compile Include="src\User\CurrentUser.cs" />
     <Compile Include="src\controllers\AuthController.cs" />
@@ -57,19 +60,20 @@
     <Compile Include="src\repositories\user\objects\Repo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Blazor.Bootstrap" Version="3.5.0"/>
-    <PackageReference Include="DotNetEnv" Version="3.1.1"/>
-    <PackageReference Include="Google.Cloud.Firestore" Version="3.10.0"/>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8"/>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4"/>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version=" 9.0.8"/>
-    <PackageReference Include="ClosedXML" Version="0.105.0"/>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0"/>
-    <PackageReference Include="OpenIddict.AspNetCore" Version="7.2.0"/>
-    <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="7.2.0"/>
-    <PackageReference Include="OpenIddict.Client.WebIntegration" Version="7.2.0"/>
-    <PackageReference Include="OpenIddict.Client.SystemNetHttp" Version="7.2.0"/>
-    <PackageReference Include="OpenIddict.Validation.SystemNetHttp" Version="7.2.0"/>
-    <PackageReference Include="Markdig" Version="0.44.0"/>
+    <PackageReference Include="Blazor.Bootstrap" Version="3.5.0" />
+    <PackageReference Include="DotNetEnv" Version="3.1.1" />
+    <PackageReference Include="Google.Cloud.Firestore" Version="3.10.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version=" 9.0.8" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0" />
+    <PackageReference Include="OpenIddict.AspNetCore" Version="7.2.0" />
+    <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="7.2.0" />
+    <PackageReference Include="OpenIddict.Client.WebIntegration" Version="7.2.0" />
+    <PackageReference Include="OpenIddict.Client.SystemNetHttp" Version="7.2.0" />
+    <PackageReference Include="OpenIddict.Validation.SystemNetHttp" Version="7.2.0" />
+    <PackageReference Include="Markdig" Version="0.44.0" />
+    <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 </Project>
