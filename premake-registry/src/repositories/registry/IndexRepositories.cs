@@ -62,7 +62,7 @@ namespace premake.repositories.registry
                 var repos = _commonIndex.libraries.First(userLibs => userLibs.Key.StartsWith(userName));
 
                 var convertedRepos = repos.Value.Select(lib => {
-                    return new RegistryRepo() { UserName = userName, RepoName = lib.name, isLib = true };
+                    return new RegistryRepo() { UserName = repos.Key, RepoName = lib.name, isLib = true };
                 });
                 return convertedRepos.Skip(page * pageSize).Take(pageSize).ToArray();
             });

@@ -30,14 +30,27 @@ namespace premake.repositories.registry
         }
         public async Task<RegistryRepo[]> GetByFieldPaged(string fieldPath, string value,int page)
         {
-            string endValue = value.Substring(0, value.Length - 1) + (char)(value[^1] + 1);
-            var snapshot = await _reposCollection
-            .OrderBy(fieldPath)
-            .StartAt(value)
-            .EndBefore(endValue)
-            .Limit(pageSize)
-            .GetSnapshotAsync();
-            return snapshot.Documents.Select(d => d.ConvertTo<RegistryRepo>()).ToArray();
+            if (string.IsNullOrEmpty(value))
+            {
+                var snapshot = await _reposCollection
+                .OrderBy(fieldPath)
+                .Offset(page*pageSize)
+                .Limit(pageSize)
+                .GetSnapshotAsync();
+                return snapshot.Documents.Select(d => d.ConvertTo<RegistryRepo>()).ToArray();
+            }
+            else
+            {
+                string endValue = value.Substring(0, value.Length - 1) + (char)(value[^1] + 1);
+                var snapshot = await _reposCollection
+                .OrderBy(fieldPath)
+                .StartAt(value)
+                .EndBefore(endValue)
+                .Offset(page * pageSize)
+                .Limit(pageSize)
+                .GetSnapshotAsync();
+                return snapshot.Documents.Select(d => d.ConvertTo<RegistryRepo>()).ToArray();
+            }
         }
 
         // --- Search by username ---
