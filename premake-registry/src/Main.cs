@@ -40,6 +40,15 @@ builder.Services
 
 
 builder.Services.AddControllers();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PublicApiPolicy", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 builder.Services.AddOpenApi();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSwaggerGen(c =>

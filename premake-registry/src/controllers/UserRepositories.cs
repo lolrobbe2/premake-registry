@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 using premake.repositories.registry;
 using premake.repositories.registry.objects;
 using System.Collections.Generic;
@@ -27,6 +28,7 @@ namespace premake.controllers
         }
 
         [HttpGet("pagecount")]
+        [EnableCors("PublicApiPolicy")]
         public async Task<ActionResult<int>> PageCount()
         {
             return Ok(await _userRepositories.GetPageCount());
@@ -35,9 +37,10 @@ namespace premake.controllers
         /// Unified search endpoint. Pass type + value.
         /// </summary>
         [HttpGet("search")]
+        [EnableCors("PublicApiPolicy")]
         public async Task<ActionResult<IReadOnlyList<RegistryRepo>>> Search(
             [FromQuery] RepoSearchType type,
-            [FromQuery] string? value,
+            [FromQuery] string value,
             [FromQuery] int page = 10)
         {
             IReadOnlyList<RegistryRepo> results;
