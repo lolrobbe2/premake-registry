@@ -49,16 +49,12 @@
 .page-selection {
     display: flex;
     justify-content: center;
-    align-self: center;
-    margin-inline: 1rem;
-    align-items: stretch;
-    position: absolute;
-    bottom: 10%;
-    width: 100%
 }
 
 .page-input {
     width: 2rem;
+    text-align: center;
+    margin-inline: 0.5rem;
 }
 /* Mobile adjustments */
 @media (max-width: 37.5rem) { /* 600px equivalent */
