@@ -40,15 +40,6 @@ builder.Services
 
 
 builder.Services.AddControllers();
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("PublicApiPolicy", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
 builder.Services.AddOpenApi();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSwaggerGen(c =>
@@ -114,6 +105,16 @@ builder.Services.AddOpenIddict()
     });
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PublicApiPolicy", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddScoped<CurrentUser>();
 builder.Services.AddScoped<GitRepoRepository>();
 builder.Services.AddScoped<UserRepositories>();
@@ -129,7 +130,6 @@ if (host.Environment.IsDevelopment())
         }
     );
 }
-
 host.UseHsts();
 host.UseForwardedHeaders();
 host.UseAuthentication();
@@ -138,6 +138,7 @@ host.MapControllers();
 host.MapRazorPages();
 host.UseStaticFiles();
 host.UseRouting();
+host.UseCors("PublicApiPolicy");
 host.MapBlazorHub();
 host.MapFallbackToPage("/_Host");
 if (host.Environment.IsDevelopment())
