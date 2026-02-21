@@ -40,7 +40,7 @@ namespace premake.controllers
         [EnableCors("PublicApiPolicy")]
         public async Task<ActionResult<IReadOnlyList<RegistryRepo>>> Search(
             [FromQuery] RepoSearchType type,
-            [FromQuery] string value,
+            [FromQuery] string? value,
             [FromQuery] int page = 10)
         {
             IReadOnlyList<RegistryRepo> results;

@@ -58,11 +58,16 @@ namespace premake.repositories.registry
         {
             string cacheKey = $"index_user_{userName}_{page}";
             return await _cache.CacheComputeAsync(cacheKey, async () => {
+                
+                var repos = _commonIndex.libraries.Where(userLibs => userLibs.Key.StartsWith(userName) || string.IsNullOrEmpty(userName));
 
-                var repos = _commonIndex.libraries.First(userLibs => userLibs.Key.StartsWith(userName));
-
-                var convertedRepos = repos.Value.Select(lib => {
-                    return new RegistryRepo() { UserName = repos.Key, RepoName = lib.name, isLib = true };
+                var convertedRepos = repos.SelectMany(repos => {
+                    List<RegistryRepo> converted = new List<RegistryRepo>();
+                    foreach (IndexLibrary item in repos.Value)
+                    {
+                        converted.Add(new RegistryRepo() { isLib = false, CreatedAt = Timestamp.GetCurrentTimestamp(), RepoName = item.name, tags = [], UserName = repos.Key });   
+                    }
+                    return converted;
                 });
                 return convertedRepos.Skip(page * pageSize).Take(pageSize).ToArray();
             });
@@ -79,7 +84,7 @@ namespace premake.repositories.registry
                 {
                     IndexLibrary? foundLib = libs.FirstOrDefault(lib =>
                     {
-                        return lib.name.StartsWith(repoName);
+                        return lib.name.StartsWith(repoName) || string.IsNullOrEmpty(repoName);
                     });
                     if (foundLib is not null)
                     {
