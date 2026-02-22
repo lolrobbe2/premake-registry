@@ -65,7 +65,7 @@ namespace premake.repositories.registry
                     List<RegistryRepo> converted = new List<RegistryRepo>();
                     foreach (IndexLibrary item in repos.Value)
                     {
-                        converted.Add(new RegistryRepo() { isLib = false, CreatedAt = Timestamp.GetCurrentTimestamp(), RepoName = item.name, tags = [], UserName = repos.Key });   
+                        converted.Add(new RegistryRepo() { isLib = true, CreatedAt = Timestamp.GetCurrentTimestamp(), RepoName = item.name, tags = [], UserName = repos.Key });   
                     }
                     return converted;
                 });
